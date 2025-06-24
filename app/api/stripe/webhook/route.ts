@@ -221,10 +221,12 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
 
   if (planError || !planData) {
     console.error('Error fetching plan from database:', planError);
-    // Fallback or handle error - maybe default to a free plan status
     return;
   }
   console.log('Found plan in DB:', planData);
+  
+  const period_start = (subscription as any).current_period_start;
+  const period_end = (subscription as any).current_period_end;
 
   const subscriptionData = {
     user_id: userId,
@@ -232,8 +234,8 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
     stripe_customer_id: subscription.customer as string,
     plan_id: planData.id,
     status: subscription.status,
-    current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-    current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+    current_period_start: period_start ? new Date(period_start * 1000).toISOString() : null,
+    current_period_end: period_end ? new Date(period_end * 1000).toISOString() : null,
     cancel_at: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
     canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
   };
@@ -254,8 +256,8 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
     plan_id: planData.id,
     monthly_prompt_limit: planData.prompt_limit,
     monthly_prompts_used: 0, // Reset usage on plan change/update
-    billing_cycle_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
-    billing_cycle_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+    billing_cycle_start: period_start ? new Date(period_start * 1000).toISOString() : null,
+    billing_cycle_end: period_end ? new Date(period_end * 1000).toISOString() : null,
   };
 
   // 3. Update the 'profiles' table with the new subscription status and limits
