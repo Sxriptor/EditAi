@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
         priceId,
         mode,
         `${process.env.NEXT_PUBLIC_APP_URL}/account?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        `${process.env.NEXT_PUBLIC_APP_URL}/account?canceled=true`
+        `${process.env.NEXT_PUBLIC_APP_URL}/account?canceled=true`,
+        customerId
       );
       
       console.log('Checkout session created successfully:', session.id);

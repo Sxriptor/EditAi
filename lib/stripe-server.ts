@@ -98,7 +98,9 @@ export const stripeServer = {
         // Check if the error is due to missing column (schema mismatch)
         if (updateError.message?.includes('column "stripe_customer_id" of relation "profiles" does not exist')) {
           console.error('Database schema missing stripe_customer_id column. Please run migrations.');
-          throw new Error('Database schema is outdated. Please contact support.');
+          // For now, continue with the customer ID even if we can't save it
+          console.warn('Continuing with Stripe customer ID:', customer.id, 'but it cannot be saved to database');
+          return customer.id;
         }
         
         // For other errors, log but don't fail - customer was created successfully
@@ -118,26 +120,33 @@ export const stripeServer = {
     priceId: string,
     mode: 'subscription' | 'payment' = 'subscription',
     successUrl: string,
-    cancelUrl: string
+    cancelUrl: string,
+    customerId?: string
   ): Promise<Stripe.Checkout.Session> {
     const stripe = getStripe();
     
-    // Get the customer ID from the database
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('stripe_customer_id, full_name')
-      .eq('id', userId)
-      .single();
+    let customerIdToUse = customerId;
+    
+    // If no customer ID provided, try to get it from database
+    if (!customerIdToUse) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('stripe_customer_id, full_name')
+        .eq('id', userId)
+        .single();
 
-    if (!profile?.stripe_customer_id) {
+      customerIdToUse = profile?.stripe_customer_id;
+    }
+
+    if (!customerIdToUse) {
       console.error('Customer not found in database for user:', userId);
       throw new Error('Customer not found. Please ensure your profile is set up correctly.');
     }
 
-    console.log('Creating Stripe checkout session for customer:', profile.stripe_customer_id);
+    console.log('Creating Stripe checkout session for customer:', customerIdToUse);
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      customer: profile.stripe_customer_id,
+      customer: customerIdToUse,
       payment_method_types: ['card'],
       line_items: [
         {
