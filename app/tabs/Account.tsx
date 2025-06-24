@@ -27,6 +27,7 @@ import { PaymentModal } from "@/components/PaymentModal";
 import { stripeService } from "@/lib/stripe-client";
 import { useAuth } from "@/lib/auth-context";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useSearchParams } from 'next/navigation';
 
 interface AccountProps {
   user: any;
@@ -53,6 +54,7 @@ export function Account({
   loadTemplate
 }: AccountProps) {
   const { user: authUser } = useAuth();
+  const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any>(null);
@@ -77,8 +79,18 @@ export function Account({
     if (authUser) {
       loadSubscriptionStatus();
       loadProfileData();
+      
+      // Handle successful payment
+      const success = searchParams.get('success');
+      const sessionId = searchParams.get('session_id');
+      
+      if (success === 'true' && sessionId) {
+        setPaymentModalOpen(false); // Ensure modal is closed
+        setActiveTab('billing'); // Switch to billing tab
+        loadSubscriptionStatus(true); // Force refresh subscription status
+      }
     }
-  }, [authUser]);
+  }, [authUser, searchParams]);
 
   const loadProfileData = () => {
     if (!authUser) return;
