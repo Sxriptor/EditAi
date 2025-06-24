@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { promptText, mediaUrl, mediaType, workflowMode, selectedStyles, mainFocus, projectId } = body;
+    const { promptText, mediaUrl, mediaType, workflowMode, selectedStyles, mainFocus, projectId, enhancedAnalysis } = body;
 
     // Validate required fields
     if (!promptText || typeof promptText !== 'string') {
@@ -38,9 +38,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user can use AI features
+    // Calculate prompt cost (1.0 for standard, 1.5 for enhanced analysis)
+    const promptCost = enhancedAnalysis ? 1.5 : 1.0;
+    console.log('🧮 Prompt cost calculated:', promptCost, enhancedAnalysis ? '(with enhanced analysis)' : '(standard)');
+
+    // Check if user can use AI features with the calculated cost
     const { stripeServer } = await import('@/lib/stripe-server');
-    const canUse = await stripeServer.canUseAI(user.id);
+    const canUse = await stripeServer.canUseAI(user.id, promptCost);
     
     if (!canUse.allowed) {
       return NextResponse.json(
@@ -48,7 +52,8 @@ export async function POST(request: NextRequest) {
           error: 'AI usage not allowed',
           reason: canUse.reason,
           promptsLeft: canUse.promptsLeft,
-          requiresUpgrade: true
+          requiresUpgrade: true,
+          promptCost: promptCost
         },
         { status: 403 }
       );
@@ -65,12 +70,14 @@ export async function POST(request: NextRequest) {
       projectId,
       workflowMode,
       selectedStyles,
-      mainFocus
+      mainFocus,
+      enhancedAnalysis
     );
 
-    // Record the prompt usage after successful processing
+    // Record the prompt usage after successful processing (with the actual cost)
     try {
-      await stripeServer.recordPromptUsage(user.id);
+      await stripeServer.recordPromptUsage(user.id, promptCost);
+      console.log('✅ Recorded prompt usage:', promptCost);
     } catch (usageError) {
       console.error('Error recording prompt usage:', usageError);
       // Don't fail the request if usage tracking fails

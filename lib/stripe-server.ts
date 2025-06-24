@@ -181,63 +181,221 @@ export const stripeServer = {
   },
 
   // Check if user can use AI features
-  async canUseAI(userId: string): Promise<{ allowed: boolean; reason?: string; promptsLeft?: number }> {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_plan, monthly_prompts_used, monthly_prompt_limit, subscription_status')
-      .eq('id', userId)
-      .single();
-
-    if (!profile) {
-      return { allowed: false, reason: 'User not found' };
-    }
-
-    // If user has active subscription (not free), allow AI usage
-    if (profile.subscription_plan === 'creator' && profile.subscription_status === 'active') {
-      const promptsLeft = profile.monthly_prompt_limit - profile.monthly_prompts_used;
-      return { 
-        allowed: promptsLeft > 0, 
-        reason: promptsLeft <= 0 ? 'Monthly prompt limit reached' : undefined,
-        promptsLeft 
+  async canUseAI(userId: string, promptCost: number = 1.0): Promise<{ allowed: boolean; reason?: string; promptsLeft?: number }> {
+    try {
+      type ProfileWithPlan = {
+        subscription_status: string | null;
+        monthly_prompts_used: number;
+        monthly_prompt_limit: number;
+        plan_id: number | null;
+        plans: {
+          name: string;
+          prompt_limit: number;
+          overage_rate: number;
+        } | null;
       };
-    }
 
-    if (profile.subscription_plan === 'usage_based' && profile.subscription_status === 'active') {
-      return { allowed: true }; // Usage-based has no limits
-    }
+      // Get profile with plan information (same as getSubscriptionStatus)
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select(`
+          subscription_status,
+          monthly_prompts_used,
+          monthly_prompt_limit,
+          plan_id,
+          plans (
+            name,
+            prompt_limit,
+            overage_rate
+          )
+        `)
+        .eq('id', userId)
+        .single() as { data: ProfileWithPlan | null, error: any };
 
-    // Free users get limited prompts
-    if (profile.subscription_plan === 'free') {
-      const promptsLeft = 3 - profile.monthly_prompts_used;
-      return { 
-        allowed: promptsLeft > 0, 
-        reason: promptsLeft <= 0 ? 'Free tier limit reached. Please upgrade to continue.' : undefined,
-        promptsLeft 
-      };
-    }
+      if (error || !profile) {
+        console.error('Error fetching profile for AI usage check:', error);
+        return { allowed: false, reason: 'User not found' };
+      }
 
-    return { allowed: false, reason: 'No active subscription' };
+      const planName = profile.plans?.name.toLowerCase() || 'free';
+      const promptLimit = profile.plans?.prompt_limit || 3;
+      const promptsUsed = profile.monthly_prompts_used || 0;
+
+      console.log(`AI Usage Check for ${userId}:`, {
+        plan: planName,
+        status: profile.subscription_status,
+        promptsUsed,
+        promptLimit,
+        promptCost
+      });
+
+      // Free users get limited prompts
+      if (planName === 'free') {
+        const remainingPrompts = 3 - promptsUsed;
+        const allowed = remainingPrompts >= promptCost;
+        return { 
+          allowed, 
+          reason: !allowed ? 'Free tier limit reached. Please upgrade to continue.' : undefined,
+          promptsLeft: Math.floor(remainingPrompts)
+        };
+      }
+
+      // Creator plan users with active subscription
+      if (planName === 'creator' && profile.subscription_status === 'active') {
+        const remainingPrompts = promptLimit - promptsUsed;
+        const allowed = remainingPrompts >= promptCost;
+        return { 
+          allowed, 
+          reason: !allowed ? 'Monthly prompt limit reached' : undefined,
+          promptsLeft: Math.floor(remainingPrompts) 
+        };
+      }
+
+      // Usage-based plan users (pay per prompt)
+      if (planName === 'usage_based' && profile.subscription_status === 'active') {
+        return { allowed: true }; // Usage-based has no limits, they pay per prompt
+      }
+
+      // Default case - inactive subscription or unknown plan
+      return { allowed: false, reason: 'No active subscription or unknown plan' };
+
+    } catch (error) {
+      console.error('Error in canUseAI:', error);
+      return { allowed: false, reason: 'Error checking subscription' };
+    }
   },
 
   // Record prompt usage
-  async recordPromptUsage(userId: string): Promise<void> {
-    // Increment usage counter
-    const { error } = await supabase.rpc('increment_prompt_usage', {
-      user_id_param: userId
-    });
+  async recordPromptUsage(userId: string, promptCost: number = 1.0): Promise<void> {
+    try {
+      console.log(`Recording prompt usage for ${userId}: ${promptCost} prompts`);
+      
+      // Primary method: Direct update with error handling and retry
+      let updateSuccess = false;
+      let attempts = 0;
+      const maxAttempts = 3;
 
-    if (error) throw error;
+      while (!updateSuccess && attempts < maxAttempts) {
+        attempts++;
+        
+        try {
+          // First get current usage
+          const { data: profile, error: fetchError } = await supabase
+            .from('profiles')
+            .select('monthly_prompts_used, plans(name)')
+            .eq('id', userId)
+            .single();
 
-    // Log the AI interaction
-    await supabase
-      .from('ai_interactions')
-      .insert({
-        user_id: userId,
-        prompt_text: 'AI prompt used',
-        prompt_type: 'command',
-        ai_response: { recorded: true },
-        model_used: 'gpt-4'
-      });
+          if (fetchError) {
+            console.error(`Attempt ${attempts}: Error fetching profile for usage recording:`, fetchError);
+            throw fetchError;
+          }
+
+          const currentUsage = profile?.monthly_prompts_used || 0;
+          const newUsage = currentUsage + promptCost;
+          const planName = (profile as any)?.plans?.name || 'Unknown';
+
+          console.log(`Attempt ${attempts}: Usage update: ${currentUsage} -> ${newUsage} (${planName} plan)`);
+
+          // Update usage counter with the actual cost
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ monthly_prompts_used: newUsage })
+            .eq('id', userId);
+
+          if (updateError) {
+            console.error(`Attempt ${attempts}: Error updating prompt usage:`, updateError);
+            throw updateError;
+          }
+
+          console.log(`✅ Attempt ${attempts}: Successfully updated profiles table (${currentUsage} -> ${newUsage})`);
+          updateSuccess = true;
+
+        } catch (attemptError) {
+          console.error(`Attempt ${attempts} failed:`, attemptError);
+          
+          if (attempts === maxAttempts) {
+            // Final fallback: Use the database function for integer values only
+            console.log('⚠️ Falling back to database RPC function for usage tracking');
+            
+            if (promptCost === 1.0) {
+              // For standard prompts, use the existing increment function
+              const { error: rpcError } = await supabase.rpc('increment_prompt_usage', {
+                user_id_param: userId
+              });
+              
+              if (rpcError) {
+                console.error('❌ RPC fallback also failed:', rpcError);
+                throw new Error(`All tracking methods failed. Last error: ${rpcError.message}`);
+              } else {
+                console.log('✅ RPC fallback succeeded for standard prompt');
+                updateSuccess = true;
+              }
+            } else {
+              // For fractional prompts, manually round and update
+              console.log(`⚠️ Fractional prompt cost ${promptCost}, manually rounding to ${Math.ceil(promptCost)}`);
+              
+              for (let i = 0; i < Math.ceil(promptCost); i++) {
+                const { error: rpcError } = await supabase.rpc('increment_prompt_usage', {
+                  user_id_param: userId
+                });
+                
+                if (rpcError) {
+                  console.error('❌ Manual increment failed:', rpcError);
+                  throw new Error(`Manual increment failed: ${rpcError.message}`);
+                }
+              }
+              
+              console.log(`✅ Manual increment succeeded (${Math.ceil(promptCost)} increments for ${promptCost} cost)`);
+              updateSuccess = true;
+            }
+          } else {
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+          }
+        }
+      }
+
+      // Log the AI interaction with cost information (best effort, don't fail if this errors)
+      try {
+        const { error: logError } = await supabase
+          .from('ai_interactions')
+          .insert({
+            user_id: userId,
+            prompt_text: `AI prompt used (cost: ${promptCost})`,
+            prompt_type: 'command',
+            ai_response: { recorded: true, promptCost, method: updateSuccess ? 'direct' : 'fallback' },
+            model_used: promptCost > 1 ? 'gpt-4 + anthropic' : 'gpt-4'
+          });
+
+        if (logError) {
+          console.error('⚠️ Error logging AI interaction (non-critical):', logError);
+        } else {
+          console.log('✅ AI interaction logged successfully');
+        }
+      } catch (logError) {
+        console.error('⚠️ Failed to log AI interaction (non-critical):', logError);
+      }
+
+      // Final verification: Check that the update actually happened
+      try {
+        const { data: verifyProfile } = await supabase
+          .from('profiles')
+          .select('monthly_prompts_used')
+          .eq('id', userId)
+          .single();
+          
+        console.log(`🔍 Verification: User ${userId} now has ${verifyProfile?.monthly_prompts_used || 0} prompts used`);
+      } catch (verifyError) {
+        console.error('⚠️ Verification check failed (non-critical):', verifyError);
+      }
+
+      console.log(`✅ Successfully recorded ${promptCost} prompt usage for ${userId}`);
+      
+    } catch (error) {
+      console.error('❌ Complete failure to record prompt usage:', error);
+      throw error;
+    }
   },
 
   // Get user's subscription status

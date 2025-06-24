@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from './supabase';
 
 // Initialize OpenAI client
@@ -7,6 +8,10 @@ require('dotenv').config();           // <-- load .env into process.env
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+}) : null;
 
 // Types for our AI system
 export interface UserEditingPreferences {
@@ -65,10 +70,12 @@ export class AIEditingService {
     projectId?: string,
     workflowMode?: 'color-grade' | 'image-repurpose',
     selectedStyles?: string[],
-    mainFocus?: string[]
+    mainFocus?: string[],
+    enhancedAnalysis?: boolean
   ): Promise<AIResponse> {
     
     console.log('🤖 Processing AI prompt for user:', userId);
+    console.log('🧠 Enhanced analysis enabled:', enhancedAnalysis);
     
     try {
       // 1. AUTHENTICATE AND LOAD USER CONTEXT
@@ -79,7 +86,15 @@ export class AIEditingService {
       
       if (isImageGeneration && (!mediaUrl || workflowMode === 'image-repurpose')) {
         // Generate new image from description (Image Repurpose mode)
-        return await this.generateImageFromPrompt(userId, promptText, userPreferences, selectedStyles, mainFocus, mediaUrl);
+        return await this.generateImageFromPrompt(
+          userId, 
+          promptText, 
+          userPreferences, 
+          selectedStyles, 
+          mainFocus, 
+          mediaUrl,
+          enhancedAnalysis
+        );
       }
       
       // 3. INTERPRET EDITING PROMPT INTENT
@@ -95,7 +110,8 @@ export class AIEditingService {
         mediaType,
         projectId,
         selectedStyles,
-        mainFocus
+        mainFocus,
+        enhancedAnalysis
       );
       
       return response;
@@ -136,7 +152,8 @@ export class AIEditingService {
     userPreferences: UserEditingPreferences,
     selectedStyles?: string[],
     mainFocus?: string[],
-    originalImageUrl?: string
+    originalImageUrl?: string,
+    enhancedAnalysis?: boolean
   ): Promise<AIResponse> {
     try {
       console.log('🎨 Generating image from prompt:', promptText);
@@ -148,15 +165,21 @@ export class AIEditingService {
       if (originalImageUrl) {
         try {
           console.log('🔍 Analyzing original image with GPT-4 Vision...');
-          const visionResponse = await openai.chat.completions.create({
-            model: 'gpt-4o',
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  { 
-                    type: 'text', 
-                    text: `Analyze this image in detail for the purpose of creating a similar image with the prompt: "${promptText}". 
+          
+          // Use enhanced analysis if enabled, otherwise use standard
+          if (enhancedAnalysis) {
+            console.log('🧠 Using enhanced Anthropic analysis for image generation...');
+            imageAnalysis = await this.enhancedImageAnalysis(originalImageUrl, promptText, userPreferences);
+          } else {
+            const visionResponse = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { 
+                      type: 'text', 
+                      text: `Analyze this image in detail for the purpose of creating a similar image with the prompt: "${promptText}". 
 
 Please describe:
 1. The person's appearance, pose, clothing, and key features
@@ -169,18 +192,20 @@ Please describe:
 ${mainFocus && mainFocus.length > 0 ? `Pay special attention to: ${mainFocus.join(', ')}` : ''}
 
 Keep the description detailed but concise for use in an image generation prompt.`
-                  },
-                  { 
-                    type: 'image_url', 
-                    image_url: { url: originalImageUrl }
-                  }
-                ]
-              }
-            ],
-            max_tokens: 500
-          });
+                    },
+                    { 
+                      type: 'image_url', 
+                      image_url: { url: originalImageUrl }
+                    }
+                  ]
+                }
+              ],
+              max_tokens: 500
+            });
+            
+            imageAnalysis = visionResponse.choices[0]?.message.content || '';
+          }
           
-          imageAnalysis = visionResponse.choices[0]?.message.content || '';
           console.log('✅ Image analysis complete:', imageAnalysis.substring(0, 100) + '...');
         } catch (visionError) {
           console.error('❌ Vision analysis failed:', visionError);
@@ -568,7 +593,8 @@ LUT_3D_SIZE ${lutSize}
     mediaType?: 'image' | 'video',
     projectId?: string,
     selectedStyles?: string[],
-    mainFocus?: string[]
+    mainFocus?: string[],
+    enhancedAnalysis?: boolean
   ): Promise<AIResponse> {
     
     const startTime = Date.now();
@@ -608,29 +634,36 @@ User has recently asked about: ${recentInteractions.map(i => i.prompt_text.subst
       let mediaAnalysis = '';
       if (mediaUrl && mediaType === 'image') {
         try {
-          const visionResponse = await openai.chat.completions.create({
-            model: 'gpt-4o', // Upgraded from gpt-4o-mini to gpt-4o for best vision analysis
-            messages: [
-              {
-                role: 'user',
-                content: [
-                  { 
-                    type: 'text', 
-                    text: 'Analyze this image for editing purposes. Describe: lighting (dark/medium/bright), contrast (low/medium/high), dominant colors, visual style, and any notable features. Keep it concise and technical.'
-                  },
-                  { 
-                    type: 'image_url', 
-                    image_url: { url: mediaUrl }
-                  }
-                ]
-              }
-            ],
-            max_tokens: 300
-          });
-          mediaAnalysis = visionResponse.choices[0]?.message.content || '';
+          if (enhancedAnalysis) {
+            // Use Anthropic for enhanced analysis
+            mediaAnalysis = await this.enhancedImageAnalysis(mediaUrl, promptText, userPreferences);
+            console.log('🧠 Enhanced analysis completed:', mediaAnalysis.substring(0, 100) + '...');
+          } else {
+            // Use standard GPT-4 Vision analysis
+            const visionResponse = await openai.chat.completions.create({
+              model: 'gpt-4o', // Upgraded from gpt-4o-mini to gpt-4o for best vision analysis
+              messages: [
+                {
+                  role: 'user',
+                  content: [
+                    { 
+                      type: 'text', 
+                      text: 'Analyze this image for editing purposes. Describe: lighting (dark/medium/bright), contrast (low/medium/high), dominant colors, visual style, and any notable features. Keep it concise and technical.'
+                    },
+                    { 
+                      type: 'image_url', 
+                      image_url: { url: mediaUrl }
+                    }
+                  ]
+                }
+              ],
+              max_tokens: 300
+            });
+            mediaAnalysis = visionResponse.choices[0]?.message.content || '';
+          }
           
           systemPrompt += `MEDIA ANALYSIS:
-Image Analysis: ${mediaAnalysis}
+${enhancedAnalysis ? 'Enhanced AI Analysis' : 'Standard Analysis'}: ${mediaAnalysis}
 
 `;
         } catch (visionError) {
@@ -933,6 +966,111 @@ Be specific about values, settings, and techniques. Use professional color gradi
     } catch (error) {
       console.error('Error fetching interaction history:', error);
       return [];
+    }
+  }
+
+  /**
+   * Enhanced image analysis using Anthropic Claude for deep contextual understanding
+   * This provides detailed analysis that goes beyond basic vision to understand composition,
+   * artistic elements, technical aspects, and contextual information
+   */
+  async enhancedImageAnalysis(
+    imageUrl: string,
+    promptText: string,
+    userPreferences: UserEditingPreferences
+  ): Promise<string> {
+    try {
+      console.log('🧠 Performing enhanced image analysis with Anthropic AI...');
+      
+      // Check if Anthropic is available
+      if (!anthropic) {
+        console.warn('⚠️ Anthropic API key not configured, falling back to standard analysis');
+        return 'Enhanced analysis unavailable - Anthropic API key not configured.';
+      }
+      
+      // Fetch the image data to send to Anthropic
+      const imageResponse = await fetch(imageUrl);
+      const imageBuffer = await imageResponse.arrayBuffer();
+      const base64Image = Buffer.from(imageBuffer).toString('base64');
+      
+      // Determine the media type
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+      
+      const response = await anthropic.messages.create({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1000,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: contentType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+                  data: base64Image,
+                },
+              },
+              {
+                type: 'text',
+                text: `Analyze this image with expert-level detail for the purpose of ${promptText}. 
+
+Provide a comprehensive analysis covering:
+
+TECHNICAL ANALYSIS:
+- Lighting setup and quality (direction, intensity, color temperature)
+- Camera settings implications (aperture, focal length, composition)
+- Exposure and dynamic range characteristics
+- Color palette and saturation levels
+- Contrast and tonal distribution
+
+ARTISTIC COMPOSITION:
+- Rule of thirds and compositional techniques
+- Leading lines, framing, and visual flow
+- Depth of field and focus areas
+- Balance and visual weight distribution
+
+CONTEXTUAL ELEMENTS:
+- Scene setting and environment details
+- Mood and emotional atmosphere
+- Style influences (cinematic, documentary, portrait, etc.)
+- Time of day and environmental conditions
+
+SUBJECT ANALYSIS:
+- Primary and secondary subjects
+- Facial expressions and body language (if applicable)
+- Clothing, props, and accessories
+- Interaction between elements
+
+COLOR SCIENCE:
+- Dominant and accent colors
+- Color harmony and relationships
+- Skin tone characteristics
+- Shadow and highlight color casts
+
+EDITING OPPORTUNITIES:
+- Areas that could benefit from specific adjustments
+- Potential for color grading enhancements
+- Technical improvements possible
+- Creative direction suggestions
+
+Format your response as detailed but concise insights that can inform precise editing decisions. Focus on actionable information that will help create better prompts for AI editing systems.
+
+User's preferred editing style: ${userPreferences.editing_tone} with ${userPreferences.color_grading_style} color grading.`
+              }
+            ]
+          }
+        ]
+      });
+
+      const analysis = response.content[0]?.type === 'text' ? response.content[0].text : '';
+      console.log('✅ Enhanced analysis complete:', analysis.substring(0, 150) + '...');
+      
+      return analysis;
+    } catch (error) {
+      console.error('❌ Enhanced analysis failed:', error);
+      // Fallback to basic description
+      return 'Enhanced analysis unavailable - using standard image processing.';
     }
   }
 }

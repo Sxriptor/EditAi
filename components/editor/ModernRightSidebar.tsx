@@ -56,6 +56,8 @@ interface ModernRightSidebarProps {
   promptHistory: string[];
   setShowPromptStyles: (show: boolean) => void;
   setShowMainFocus: (show: boolean) => void;
+  enhancedAnalysis?: boolean;
+  setEnhancedAnalysis?: (enabled: boolean) => void;
   // Project functionality
   currentProject?: any;
   onSaveToProject?: () => void;
@@ -93,6 +95,8 @@ export default function ModernRightSidebar({
   promptHistory,
   setShowPromptStyles,
   setShowMainFocus,
+  enhancedAnalysis,
+  setEnhancedAnalysis,
   currentProject,
   onSaveToProject,
   hasUnsavedChanges = false,
@@ -755,6 +759,9 @@ export default function ModernRightSidebar({
             promptHistory={promptHistory}
             setShowPromptStyles={setShowPromptStyles}
             setShowMainFocus={setShowMainFocus}
+            enhancedAnalysis={enhancedAnalysis}
+            setEnhancedAnalysis={setEnhancedAnalysis}
+            hasMedia={hasMedia}
           />
         </div>
       )}

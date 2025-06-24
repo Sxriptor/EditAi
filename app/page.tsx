@@ -272,6 +272,7 @@ export default function ColorGradeDashboard() {
   const [showStyleSaveDialog, setShowStyleSaveDialog] = useState(false)
   const [currentGeneratedStyle, setCurrentGeneratedStyle] = useState<any>(null)
   const [workflowMode, setWorkflowMode] = useState<'color-grade' | 'image-repurpose'>('color-grade')
+  const [enhancedAnalysis, setEnhancedAnalysis] = useState(false)
   
   // Handle workflow mode changes
   const handleWorkflowModeChange = (newMode: 'color-grade' | 'image-repurpose') => {
@@ -1481,6 +1482,7 @@ export default function ColorGradeDashboard() {
       console.log('🎨 Selected styles:', selectedPromptStyles)
       console.log('🎯 Main focus:', selectedMainFocus.length > 0 ? selectedMainFocus.join(', ') : 'None')
       console.log('🔄 Workflow mode:', workflowMode)
+      console.log('🧠 Enhanced analysis:', enhancedAnalysis)
       
       // Call our AI backend with authentication
       const response = await fetch('/api/ai/process-prompt', {
@@ -1498,7 +1500,8 @@ export default function ColorGradeDashboard() {
           workflowMode: workflowMode, // Pass the selected workflow mode
           selectedStyles: selectedPromptStyles, // Send styles array separately for processing
           mainFocus: workflowMode === 'image-repurpose' && selectedMainFocus.length > 0 ? selectedMainFocus : null, // Send main focus for Image Repurpose
-          projectId: null // Can add project tracking later
+          projectId: null, // Can add project tracking later
+          enhancedAnalysis: enhancedAnalysis // Pass enhanced analysis setting
         }),
       })
 
@@ -3814,6 +3817,8 @@ export default function ColorGradeDashboard() {
             promptHistory={promptHistory}
             setShowPromptStyles={setShowPromptStyles}
             setShowMainFocus={setShowMainFocus}
+            enhancedAnalysis={enhancedAnalysis}
+            setEnhancedAnalysis={setEnhancedAnalysis}
             // Project functionality
             currentProject={currentProject}
             onSaveToProject={handleSaveToProject}

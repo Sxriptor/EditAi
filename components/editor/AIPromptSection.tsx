@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Wand2, Sparkles, Filter, User, Clock, TrendingUp, Palette, Target, Settings } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Wand2, Sparkles, Filter, User, Clock, TrendingUp, Palette, Target, Settings, Brain } from "lucide-react";
 
 interface AIPromptSectionProps {
   workflowMode: 'color-grade' | 'image-repurpose';
@@ -15,6 +16,9 @@ interface AIPromptSectionProps {
   promptHistory: string[];
   setShowPromptStyles: (show: boolean) => void;
   setShowMainFocus: (show: boolean) => void;
+  enhancedAnalysis?: boolean;
+  setEnhancedAnalysis?: (enabled: boolean) => void;
+  hasMedia?: boolean;
 }
 
 const AIPromptSection = ({
@@ -28,7 +32,10 @@ const AIPromptSection = ({
   selectedMainFocus,
   promptHistory,
   setShowPromptStyles,
-  setShowMainFocus
+  setShowMainFocus,
+  enhancedAnalysis = false,
+  setEnhancedAnalysis,
+  hasMedia = false
 }: AIPromptSectionProps) => {
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -146,9 +153,29 @@ const AIPromptSection = ({
               )}
             </Button>
           </div>
+
+          {/* Enhanced Analysis Toggle */}
+          {hasMedia && setEnhancedAnalysis && (
+            <div className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+              <div className="flex items-center space-x-2">
+                <Brain className="h-4 w-4 text-amber-400" />
+                <div>
+                  <div className="text-sm font-medium text-white">Enhanced Analysis</div>
+                  <div className="text-xs text-gray-400">
+                    Deep image analysis with Anthropic AI (+0.5 prompts)
+                  </div>
+                </div>
+              </div>
+              <Switch
+                checked={enhancedAnalysis}
+                onCheckedChange={setEnhancedAnalysis}
+                className="data-[state=checked]:bg-amber-500"
+              />
+            </div>
+          )}
           
           {/* Selected Context Indicators */}
-          {(selectedPromptStyles.length > 0 || selectedMainFocus.length > 0) && (
+          {(selectedPromptStyles.length > 0 || selectedMainFocus.length > 0 || enhancedAnalysis) && (
             <div className="flex flex-wrap gap-1">
               {selectedPromptStyles.length > 0 && (
                 <div className="flex items-center space-x-1 px-2 py-1 rounded-md text-xs bg-purple-500/20 text-purple-300 border border-purple-500/30">
@@ -160,6 +187,12 @@ const AIPromptSection = ({
                 <div className="flex items-center space-x-1 px-2 py-1 rounded-md text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   <Target className="h-3 w-3" />
                   <span>{selectedMainFocus.length} focus area{selectedMainFocus.length > 1 ? 's' : ''}</span>
+                </div>
+              )}
+              {enhancedAnalysis && (
+                <div className="flex items-center space-x-1 px-2 py-1 rounded-md text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <Brain className="h-3 w-3" />
+                  <span>Enhanced Analysis</span>
                 </div>
               )}
             </div>
