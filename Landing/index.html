@@ -46,21 +46,21 @@
         }
 
         .container {
-            max-width: 1120px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 2rem;
         }
 
         /* Header */
         header {
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-color);
             position: fixed;
-            width: 100%;
             top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
             z-index: 1000;
-            transition: all 0.3s ease;
         }
 
         [data-theme="light"] header {
@@ -68,14 +68,14 @@
         }
 
         nav {
-            padding: 1rem 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1rem 2rem;
         }
 
         .logo {
-            font-size: 1.45rem;
+            font-size: 1.5rem;
             font-weight: 700;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
@@ -87,19 +87,18 @@
             display: flex;
             list-style: none;
             gap: 2rem;
-            align-items: center;
         }
 
         .nav-links a {
-            text-decoration: none;
             color: var(--text-secondary);
+            text-decoration: none;
             font-weight: 500;
-            font-size: 0.8rem;
             transition: color 0.3s ease;
         }
 
-        .nav-links a:hover {
-            color: var(--text-primary);
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-primary);
         }
 
         .nav-controls {
@@ -109,34 +108,32 @@
         }
 
         .theme-toggle {
-            background: var(--bg-secondary);
+            background: none;
             border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 0.4rem;
-            border-radius: 6px;
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
         .theme-toggle:hover {
-            background: var(--hover-bg);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
         }
 
         .cta-button {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.65rem 1.45rem;
-            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.75rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(255, 107, 74, 0.3);
         }
 
         /* Hero Section */
@@ -1676,13 +1673,14 @@
             <a href="/" class="logo">ColorGrade</a>
             <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
                 <li><a href="features.html">Features</a></li>
-                <li><a href="gallery.html">Gallery</a></li>
-                <li><a href="tools.html">Tools</a></li>
                 <li><a href="pricing.html">Pricing</a></li>
+                <li><a href="tools.html">Tools</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
             </ul>
             <div class="nav-controls">
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button class="theme-toggle" id="theme-toggle">☀️</button>
                 <a href="#" class="cta-button">Get Started</a>
             </div>
         </nav>

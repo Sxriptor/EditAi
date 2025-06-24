@@ -204,6 +204,22 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 }
 
 async function updateSubscriptionInDatabase(userId: string, subscription: Stripe.Subscription) {
+  console.log('Attempting to update subscription in database for userId:', userId);
+
+  // DIAGNOSTIC STEP: Verify user exists in our database before any writes.
+  const { data: userProfile, error: profileCheckError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .single();
+
+  if (profileCheckError || !userProfile) {
+    console.error(`CRITICAL: A user with ID '${userId}' was not found in the 'profiles' table. This user may have been deleted or the ID is incorrect. Aborting database update to prevent a crash.`);
+    // We must return here. Attempting to upsert to 'subscriptions' would violate the foreign key constraint.
+    return;
+  }
+  console.log('User profile found. Proceeding with database update.');
+
   console.log('Updating subscription in database:', {
     userId,
     subscriptionId: subscription.id,
