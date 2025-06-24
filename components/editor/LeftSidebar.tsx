@@ -177,7 +177,7 @@ export default function LeftSidebar({
   return (
     <nav 
       className={`bg-gray-900/30 border-r border-gray-800 transition-all duration-300 flex-shrink-0 ${
-        isNavCollapsed ? 'w-12' : 'w-48'
+      isNavCollapsed ? 'w-12' : 'w-48'
       }`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

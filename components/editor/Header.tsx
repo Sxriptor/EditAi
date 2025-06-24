@@ -52,8 +52,8 @@ export default function Header({
       <div className="flex items-center">
         {/* Logo - hidden on mobile when nav is collapsed */}
         {(!isMobile || !isNavCollapsed) && (
-          <div className="flex items-center space-x-1.5 pl-3">
-            <div className="w-6 h-6 bg-gradient-to-br from-purple-600 to-emerald-600 rounded-lg flex items-center justify-center">
+        <div className="flex items-center space-x-1.5 pl-3">
+          <div className="w-6 h-6 bg-gradient-to-br from-purple-600 to-emerald-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xs">A</span>
             </div>
             <span className="font-semibold text-white text-sm hidden sm:inline">AMENTA</span>
@@ -72,12 +72,12 @@ export default function Header({
         
         {/* Desktop nav toggle */}
         {!isMobile && (
-          <button
-            onClick={() => setIsNavCollapsed(!isNavCollapsed)}
-            className="p-2 hover:bg-gray-800 transition-colors ml-2"
-          >
-            <Menu className="w-4 h-4 text-gray-400" />
-          </button>
+        <button
+          onClick={() => setIsNavCollapsed(!isNavCollapsed)}
+          className="p-2 hover:bg-gray-800 transition-colors ml-2"
+        >
+          <Menu className="w-4 h-4 text-gray-400" />
+        </button>
         )}
       </div>
       <div className="flex items-center space-x-2">
@@ -113,14 +113,14 @@ export default function Header({
                 </AvatarFallback>
               </Avatar>
               {!isMobile && (
-                <div className="text-left">
-                  <p className="text-xs font-medium text-white">
-                    {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {user?.email || 'No email'}
-                  </p>
-                </div>
+              <div className="text-left">
+                <p className="text-xs font-medium text-white">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {user?.email || 'No email'}
+                </p>
+              </div>
               )}
             </Button>
           </DropdownMenuTrigger>

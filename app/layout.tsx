@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/faviconcolor.png",
   },
-}
+  }
 
 export default function RootLayout({
   children,
@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
       <body className={inter.className}>
         <ClientLayout>
-          {children}
+            {children}
         </ClientLayout>
       </body>
     </html>

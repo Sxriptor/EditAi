@@ -184,7 +184,7 @@ export class AIEditingService {
         console.log('🔍 Analyzing image with GPT-4 Vision...');
         visionContext = await this.analyzeImageWithGPT4Vision(originalImageUrl, promptText);
       }
-      
+
       // 2. Enhance the user's prompt with Claude (if enhanced mode is on)
       let claudePrompt = '';
       if (enhancedAnalysis) {
@@ -556,9 +556,9 @@ LUT_3D_SIZE ${lutSize}
     projectId?: string
   ): Promise<AIResponse> {
     const startTime = Date.now();
-
-      let mediaAnalysis = '';
-      if (mediaUrl && mediaType === 'image') {
+    
+    let mediaAnalysis = '';
+    if (mediaUrl && mediaType === 'image') {
       mediaAnalysis = await this.analyzeImageWithGPT4Vision(mediaUrl, promptText);
     }
     
@@ -593,32 +593,32 @@ LUT_3D_SIZE ${lutSize}
     Based on the user request and the analysis, provide the JSON object of adjustments.`;
 
     try {
-        const response = await this.createChatCompletionWithFallback({
+        const response = await openai.chat.completions.create({
             model: 'gpt-4-turbo',
             messages: [{ role: 'system', content: systemPrompt }],
             temperature: 0.1,
             response_format: { type: "json_object" },
-      });
+        });
 
         const aiContent = response.choices[0]?.message.content || '{}';
-      const responseTime = Date.now() - startTime;
+        const responseTime = Date.now() - startTime;
+        
+        const structuredResponse = this.parseAIResponse(aiContent, promptType, userPreferences, mediaAnalysis);
+        
+        await this.logInteraction(userId, promptText, promptType, structuredResponse, responseTime, projectId, mediaUrl);
 
-      const structuredResponse = this.parseAIResponse(aiContent, promptType, userPreferences, mediaAnalysis);
-      
-      await this.logInteraction(userId, promptText, promptType, structuredResponse, responseTime, projectId, mediaUrl);
-
-      return structuredResponse;
+        return structuredResponse;
 
     } catch (error) {
         console.error('Error generating AI editing response:', error);
-      return {
+        return {
             edit_summary: `I encountered an error. As a fallback, try these settings for a ${userPreferences.editing_tone}, ${userPreferences.color_grading_style} look.`,
-        edit_steps: [
+            edit_steps: [
                 { action: 'adjust_contrast', parameters: { value: 15 }, description: `Increase contrast for a ${userPreferences.editing_tone} feel.`, order: 1 },
                 { action: 'adjust_temperature', parameters: { value: userPreferences.color_grading_style === 'warm' ? 10 : -10 }, description: `Adjust temperature for a ${userPreferences.color_grading_style} look.`, order: 2 }
-        ],
+            ],
             style_trace: ['fallback_applied'],
-      };
+        };
     }
   }
 
@@ -637,7 +637,7 @@ LUT_3D_SIZE ${lutSize}
       if (typeof adjustments !== 'object' || Object.keys(adjustments).length === 0) {
         throw new Error('AI returned empty or invalid adjustments object.');
       }
-
+      
       const editSteps: EditStep[] = Object.entries(adjustments).map(([key, value], index) => ({
         action: `adjust_${key}`,
         parameters: { value: value as number },
@@ -647,9 +647,9 @@ LUT_3D_SIZE ${lutSize}
 
       const summary = `AI suggested the following changes: ${Object.entries(adjustments).map(([key, value]) => `${key} to ${value}`).join(', ')}.`;
 
-    return {
+      return {
         edit_summary: summary,
-      edit_steps: editSteps,
+        edit_steps: editSteps,
         style_trace: ['json_based_adjustments'],
       };
 
@@ -716,7 +716,7 @@ LUT_3D_SIZE ${lutSize}
         enhanced_prompt: enhancedPrompt,
         strategy: strategy,
       };
-
+      
       const { error } = await supabase
         .from('ai_interactions')
         .insert(interactionData);
@@ -970,7 +970,7 @@ Create a single, final, highly-detailed prompt for DALL-E 3 that:
 
 Provide only the final, synthesized prompt. Do not add any other text.`;
     
-    const response = await this.createChatCompletionWithFallback({
+    const response = await openai.chat.completions.create({
         model: model,
         messages: [{ role: 'system', content: systemPrompt }],
         temperature: 0.5,
@@ -1005,28 +1005,6 @@ Provide only the final, synthesized prompt. Do not add any other text.`;
     } catch (error) {
         console.error('❌ OpenAI vision analysis also failed:', error);
         return 'Image analysis failed completely.';
-    }
-  }
-
-  /**
-   * NEW: A wrapper for OpenAI chat completion that includes a fallback to gpt-4o.
-   */
-  private async createChatCompletionWithFallback(
-    params: OpenAI.Chat.CompletionCreateParamsNonStreaming
-  ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
-    try {
-      // First attempt with the specified model
-      return await openai.chat.completions.create(params);
-    } catch (error) {
-      // Check if it's an API error indicating the model was not found
-      if (error instanceof OpenAI.APIError && (error.status === 404 || error.code === 'model_not_found')) {
-        console.warn(`⚠️ Model ${params.model} not found. Falling back to gpt-4o.`);
-        // Retry with the fallback model
-        const fallbackParams = { ...params, model: 'gpt-4o' };
-        return await openai.chat.completions.create(fallbackParams);
-      }
-      // For any other type of error, re-throw it
-      throw error;
     }
   }
 }

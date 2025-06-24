@@ -4,6 +4,8 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
+import { ChatHistoryProvider } from '@/lib/chat-history-context'
+import ChatHistoryOverlay from '@/components/editor/ChatHistoryOverlay'
 import { PaymentStatus } from "./payment-status"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -3235,7 +3237,31 @@ export default function ColorGradeDashboard() {
   }
 
     return (
-    <div className={`${isMobile ? 'h-dvh pb-safe' : 'h-screen'} w-screen bg-black text-white overflow-hidden flex flex-col`}>
+    <ChatHistoryProvider>
+      <div className={`${isMobile ? 'h-dvh pb-safe' : 'h-screen'} w-screen bg-black text-white overflow-hidden flex flex-col`}>
+      {/* Overlays */}
+      <ChatHistoryOverlay />
+      {showProjectOverlay && (
+        <ProjectOverlay
+          isOpen={showProjectOverlay}
+          onClose={() => setShowProjectOverlay(false)}
+          projectFolder={currentProject}
+          onFileSelect={handleFileSelect}
+          onProjectUpdate={() => {
+            if (currentProject) {
+              projectService.getProjectFiles(currentProject.id, 1, 10)
+            }
+          }}
+        />
+      )}
+      {showAddToProjectDialog && (
+        <AddToProjectDialog
+          isOpen={showAddToProjectDialog}
+          file={currentFileForProject}
+          onClose={() => setShowAddToProjectDialog(false)}
+          onSuccess={handleAddToProjectSuccess}
+        />
+      )}
       {/* Top Header - Fixed height */}
       <Header 
         hasMedia={hasMedia}
@@ -4079,5 +4105,6 @@ export default function ColorGradeDashboard() {
         onChange={handleFileChange}
       />
     </div>
+    </ChatHistoryProvider>
   )
 }

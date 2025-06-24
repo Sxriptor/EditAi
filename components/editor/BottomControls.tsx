@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { X, HelpCircle, Eye, Palette, Split } from 'lucide-react';
+import { X, HelpCircle, Eye, Palette, Split, MessageSquare } from 'lucide-react';
+import { useChatHistory } from '@/lib/chat-history-context';
 
 interface BottomControlsProps {
   hasMedia: boolean;
@@ -29,6 +30,8 @@ const BottomControls = ({
   showHelpHints,
   setShowHelpHints
 }: BottomControlsProps) => {
+  const { setShowChatHistory } = useChatHistory();
+
   return (
     <div className="border-t border-gray-800 p-2 bg-gray-900/50 flex-shrink-0">
       <div className="flex items-center justify-between">
@@ -56,6 +59,18 @@ const BottomControls = ({
           </Button>
         </div>
         
+        <div className="absolute left-1/2 -translate-x-1/2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowChatHistory(true)}
+              className="h-8 w-8 p-0 border-gray-600 hover:border-yellow-500 text-gray-400 hover:text-yellow-400"
+              title="View Chat History"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </Button>
+        </div>
+
         <div className="flex space-x-2">
           <Button
             size="sm"
