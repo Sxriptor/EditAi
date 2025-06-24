@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
+import { useSearchParams } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
@@ -125,9 +126,10 @@ interface LUTPreset {
 export default function ColorGradeDashboard() {
   const { user, session, loading, signOut } = useAuth()
   const { checkCanUseAI, setShowPaymentModal } = useSubscription()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
   const [isLoadingPresets, setIsLoadingPresets] = useState(false)
   const isMobile = useIsMobile()
-  const { toast } = useToast()
   const [showOriginal, setShowOriginal] = useState(false)
   const [prompt, setPrompt] = useState("")
   const [lutStrength, setLutStrength] = useState([75])
@@ -3195,6 +3197,25 @@ export default function ColorGradeDashboard() {
       setRedoStack(cachedRedo)
     }
   }, [currentProjectFile?.id, fileMetadata?.name, hasMedia])
+
+  useEffect(() => {
+    const success = searchParams.get('success')
+    const sessionId = searchParams.get('session_id')
+    
+    if (success === 'true' && sessionId) {
+      toast({
+        title: "Payment Successful!",
+        description: "Thank you for your purchase. Your account has been upgraded.",
+        variant: "default"
+      })
+    } else if (success === 'false' || searchParams.get('canceled') === 'true') {
+      toast({
+        title: "Payment Cancelled",
+        description: "The payment process was cancelled. Please try again if you'd like to upgrade.",
+        variant: "destructive"
+      })
+    }
+  }, [searchParams, toast])
 
   // Show loading spinner while checking authentication
   if (loading) {

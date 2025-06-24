@@ -95,8 +95,8 @@ export async function POST(request: NextRequest) {
         user.id,
         priceId,
         mode,
-        `${process.env.NEXT_PUBLIC_APP_URL}/account?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        `${process.env.NEXT_PUBLIC_APP_URL}/account?canceled=true`,
+        `${process.env.NEXT_PUBLIC_APP_URL}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+        `${process.env.NEXT_PUBLIC_APP_URL}?canceled=true`,
         customerId
       );
       
