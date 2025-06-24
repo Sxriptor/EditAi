@@ -367,7 +367,7 @@ export const stripeServer = {
       return {
         plan: profile.plans?.name.toLowerCase() || 'free',
         status: profile.subscription_status || 'inactive',
-        promptsUsed: profile.monthly_prompts_used || 0,
+        promptsUsed: parseFloat(profile.monthly_prompts_used as any) || 0,
         promptLimit: profile.plans?.prompt_limit || 3,
         billingCycleEnd: profile.billing_cycle_end || undefined
       };

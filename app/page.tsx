@@ -104,6 +104,7 @@ import MobileAIPrompt from '@/components/editor/MobileAIPrompt'
 import ZoomableImage from '@/components/editor/ZoomableImage'
 import { projectService, ProjectFolder, ProjectFile } from '@/lib/project-service'
 import { useSubscription } from '@/components/SubscriptionManager'
+import { stripeService } from '@/lib/stripe-client'
 
 // Import the tab components
 import { Home as HomeTab } from '@/app/tabs/Home';
@@ -1511,6 +1512,12 @@ export default function ColorGradeDashboard() {
 
       const aiResult = await response.json()
       console.log('✅ AI Response:', aiResult)
+
+      // Invalidate the subscription cache to force a refresh on the account tab
+      if (session?.user) {
+        stripeService.clearSubscriptionCache(session.user.id);
+        console.log('🔄 Cleared subscription cache for user:', session.user.id);
+      }
 
       // Convert AI edit steps to color adjustments with professional-grade intelligence
       const convertAIStepsToAdjustments = (editSteps: any[], aiSummary?: string) => {

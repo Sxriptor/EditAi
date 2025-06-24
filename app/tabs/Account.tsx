@@ -560,7 +560,7 @@ export function Account({
                       <span className="text-gray-300">AI Prompts Used</span>
                       <div className="text-right">
                         <span className="text-white font-medium text-lg">
-                          {subscriptionStatus?.promptsUsed || 0}
+                          {subscriptionStatus?.promptsUsed?.toFixed(1) || '0.0'}
                         </span>
                         {subscriptionStatus?.promptLimit > 0 && (
                           <span className="text-gray-400 text-sm ml-1">
