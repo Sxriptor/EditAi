@@ -20,6 +20,7 @@ export function ClientLayout({
       defaultTheme="dark"
       enableSystem={false}
       disableTransitionOnChange
+      forcedTheme="dark"
     >
       <AuthProvider>
         <SubscriptionManager>

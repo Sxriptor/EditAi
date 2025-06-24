@@ -121,7 +121,8 @@ export const stripeServer = {
     mode: 'subscription' | 'payment' = 'subscription',
     successUrl: string,
     cancelUrl: string,
-    customerId?: string
+    customerId?: string,
+    planType: 'creator' | 'usage_based' = 'creator'
   ): Promise<Stripe.Checkout.Session> {
     const stripe = getStripe();
     
@@ -157,7 +158,16 @@ export const stripeServer = {
       mode,
       success_url: successUrl,
       cancel_url: cancelUrl,
-      metadata: { userId }
+      metadata: { 
+        userId,
+        planType
+      },
+      subscription_data: {
+        metadata: {
+          userId,
+          planType
+        }
+      }
     };
 
     try {
@@ -231,29 +241,82 @@ export const stripeServer = {
   },
 
   // Get user's subscription status
-  async getSubscriptionStatus(userId: string): Promise<{
+  async getSubscriptionStatus(userId: string, forceRefresh = false): Promise<{
     plan: string;
     status: string;
     promptsUsed: number;
     promptLimit: number;
     billingCycleEnd?: string;
   }> {
+    type ProfileWithPlan = {
+      subscription_status: string | null;
+      monthly_prompts_used: number;
+      monthly_prompt_limit: number;
+      billing_cycle_end: string | null;
+      plan_id: number | null;
+      plans: {
+        name: string;
+        prompt_limit: number;
+        overage_rate: number;
+      } | null;
+    };
+
     const { data: profile } = await supabase
       .from('profiles')
-      .select('subscription_plan, subscription_status, monthly_prompts_used, monthly_prompt_limit, billing_cycle_end')
+      .select(`
+        subscription_status,
+        monthly_prompts_used,
+        monthly_prompt_limit,
+        billing_cycle_end,
+        plan_id,
+        plans (
+          name,
+          prompt_limit,
+          overage_rate
+        )
+      `)
       .eq('id', userId)
-      .single();
+      .single() as { data: ProfileWithPlan | null };
 
     if (!profile) {
       throw new Error('User not found');
     }
 
+    // If no plan_id or no plan found, assume free plan
+    if (!profile.plan_id || !profile.plans) {
+      const { data: freePlan } = await supabase
+        .from('plans')
+        .select('id, prompt_limit')
+        .eq('name', 'Free')
+        .single();
+
+      // Update profile with free plan if needed
+      if (freePlan && (!profile.plan_id || profile.plan_id !== freePlan.id)) {
+        await supabase
+          .from('profiles')
+          .update({
+            plan_id: freePlan.id,
+            monthly_prompt_limit: freePlan.prompt_limit,
+            subscription_status: 'inactive'
+          })
+          .eq('id', userId);
+      }
+
+      return {
+        plan: 'free',
+        status: 'inactive',
+        promptsUsed: profile.monthly_prompts_used || 0,
+        promptLimit: freePlan?.prompt_limit || 3,
+        billingCycleEnd: profile.billing_cycle_end || undefined
+      };
+    }
+
     return {
-      plan: profile.subscription_plan || 'free',
+      plan: profile.plans.name.toLowerCase(),
       status: profile.subscription_status || 'inactive',
       promptsUsed: profile.monthly_prompts_used || 0,
-      promptLimit: profile.monthly_prompt_limit || 3,
-      billingCycleEnd: profile.billing_cycle_end
+      promptLimit: profile.monthly_prompt_limit || profile.plans.prompt_limit,
+      billingCycleEnd: profile.billing_cycle_end || undefined
     };
   },
 
