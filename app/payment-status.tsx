@@ -1,13 +1,14 @@
 'use client'
 
 import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useEffect } from 'react'
 import { useSubscription } from '@/components/SubscriptionManager'
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { toast } = useToast()
   const { refreshSubscriptionStatus } = useSubscription()
 
@@ -21,6 +22,8 @@ function PaymentStatusContent() {
       console.log('[PaymentStatus] Payment successful, refreshing subscription status...')
       refreshSubscriptionStatus().then(() => {
         console.log('[PaymentStatus] Subscription status refreshed after successful payment')
+        // Clear URL parameters after processing to prevent infinite loop
+        router.replace('/')
       }).catch(error => {
         console.error('[PaymentStatus] Error refreshing subscription status:', error)
       })
@@ -37,8 +40,10 @@ function PaymentStatusContent() {
         description: "The payment process was cancelled. Please try again if you'd like to upgrade.",
         variant: "destructive"
       })
+      // Clear URL parameters after processing
+      router.replace('/')
     }
-  }, [searchParams, toast, refreshSubscriptionStatus])
+  }, [searchParams, toast, refreshSubscriptionStatus, router])
 
   return null
 }
