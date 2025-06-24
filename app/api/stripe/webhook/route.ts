@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { SUBSCRIPTION_PLANS } from '@/lib/stripe-server';
+
+// Create the Supabase admin client with the service role key
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-05-28.basil',
@@ -132,7 +138,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   // Get free plan ID
-  const { data: freePlan, error: planError } = await supabase
+  const { data: freePlan, error: planError } = await supabaseAdmin
     .from('plans')
     .select('id')
     .eq('name', 'Free')
@@ -144,7 +150,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   // Update subscription status to canceled
-  await supabase
+  await supabaseAdmin
     .from('subscriptions')
     .update({
       status: 'canceled',
@@ -153,7 +159,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .eq('stripe_subscription_id', subscription.id);
 
   // Update profile to free plan
-  await supabase
+  await supabaseAdmin
     .from('profiles')
     .update({
       subscription_status: 'canceled',
@@ -189,7 +195,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     
     if (userId) {
       // Update subscription status to past_due
-      await supabase
+      await supabaseAdmin
         .from('profiles')
         .update({ subscription_status: 'past_due' })
         .eq('id', userId);
@@ -207,7 +213,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   console.log('Attempting to update subscription in database for userId:', userId);
 
   // DIAGNOSTIC STEP: Verify user exists in our database before any writes.
-  const { data: userProfile, error: profileCheckError } = await supabase
+  const { data: userProfile, error: profileCheckError } = await supabaseAdmin
     .from('profiles')
     .select('id')
     .eq('id', userId)
@@ -229,7 +235,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   const planName = subscription.metadata?.planType === 'creator' ? 'Creator' : 'Free';
 
   // 1. Get plan details from your 'plans' table
-  const { data: planData, error: planError } = await supabase
+  const { data: planData, error: planError } = await supabaseAdmin
     .from('plans')
     .select('id, prompt_limit')
     .eq('name', planName)
@@ -257,7 +263,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   };
 
   // 2. Upsert the subscription record in the 'subscriptions' table
-  const { error: subError } = await supabase
+  const { error: subError } = await supabaseAdmin
     .from('subscriptions')
     .upsert(subscriptionData, { onConflict: 'stripe_subscription_id' });
 
@@ -277,7 +283,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   };
 
   // 3. Update the 'profiles' table with the new subscription status and limits
-  const { error: profileError } = await supabase
+  const { error: profileError } = await supabaseAdmin
     .from('profiles')
     .update(profileUpdateData)
     .eq('id', userId);
@@ -289,7 +295,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   console.log('Successfully updated profiles table.');
 
   // 4. Verification Step
-  const { data: verifyProfile, error: verifyError } = await supabase
+  const { data: verifyProfile, error: verifyError } = await supabaseAdmin
     .from('profiles')
     .select('subscription_status, plan_id, monthly_prompt_limit')
     .eq('id', userId)
@@ -303,14 +309,14 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
 }
 
 async function updatePaymentIntentInDatabase(paymentIntentId: string, status: string) {
-  await supabase
+  const { error } = await supabaseAdmin
     .from('payment_intents')
     .update({ status })
     .eq('stripe_payment_intent_id', paymentIntentId);
 }
 
 async function resetMonthlyUsage(userId: string) {
-  await supabase
+  const { error } = await supabaseAdmin
     .from('profiles')
     .update({ 
       monthly_prompts_used: 0,
