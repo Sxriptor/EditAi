@@ -273,13 +273,22 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   }
   console.log('Successfully upserted subscription record.');
 
+  const planNameForTier = planName.toLowerCase();
+
   const profileUpdateData = {
+    // New schema fields
     subscription_status: subscription.status,
     plan_id: planData.id,
     monthly_prompt_limit: planData.prompt_limit,
     monthly_prompts_used: 0, // Reset usage on plan change/update
     billing_cycle_start: period_start ? new Date(period_start * 1000).toISOString() : null,
     billing_cycle_end: period_end ? new Date(period_end * 1000).toISOString() : null,
+    
+    // Legacy schema fields for compatibility
+    subscription_tier: planNameForTier === 'creator' ? 'pro' : 'free', // Map 'Creator' to 'pro'
+    subscription_plan: planNameForTier,
+    usage_limit: planData.prompt_limit,
+    usage_count: 0,
   };
 
   // 3. Update the 'profiles' table with the new subscription status and limits
