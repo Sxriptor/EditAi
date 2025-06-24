@@ -209,82 +209,68 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
     subscriptionId: subscription.id,
     planType: subscription.metadata?.planType
   });
-  
-  const planType = subscription.metadata?.planType as 'creator' | 'usage_based' || 'creator';
-  
-  // Get plan ID from the database
+
+  const planName = subscription.metadata?.planType === 'creator' ? 'Creator' : 'Free';
+
+  // 1. Get plan details from your 'plans' table
   const { data: planData, error: planError } = await supabase
     .from('plans')
-    .select('id, prompt_limit, overage_rate')
-    .eq('name', planType === 'creator' ? 'Creator' : 'Free')
+    .select('id, prompt_limit')
+    .eq('name', planName)
     .single();
 
-  if (planError) {
-    console.error('Error fetching plan:', planError);
+  if (planError || !planData) {
+    console.error('Error fetching plan from database:', planError);
+    // Fallback or handle error - maybe default to a free plan status
     return;
   }
+  console.log('Found plan in DB:', planData);
 
-  console.log('Found plan data:', planData);
+  const subscriptionData = {
+    user_id: userId,
+    stripe_subscription_id: subscription.id,
+    stripe_customer_id: subscription.customer as string,
+    plan_id: planData.id,
+    status: subscription.status,
+    current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+    current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+    cancel_at: subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null,
+    canceled_at: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+  };
 
-  // Update subscriptions table
-  const periodStart = new Date((subscription as any).current_period_start * 1000).toISOString();
-  const periodEnd = new Date((subscription as any).current_period_end * 1000).toISOString();
-  const cancelAt = subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null;
-  const canceledAt = subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null;
-
-  // First, check if subscription already exists
-  const { data: existingSub } = await supabase
-    .from('subscriptions')
-    .select('id')
-    .eq('stripe_subscription_id', subscription.id)
-    .single();
-
-  console.log('Existing subscription check:', { exists: !!existingSub });
-
+  // 2. Upsert the subscription record in the 'subscriptions' table
   const { error: subError } = await supabase
     .from('subscriptions')
-    .upsert({
-      user_id: userId,
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer as string,
-      plan_id: planData.id,
-      status: subscription.status,
-      current_period_start: periodStart,
-      current_period_end: periodEnd,
-      cancel_at: cancelAt,
-      canceled_at: canceledAt
-    }, {
-      onConflict: 'stripe_subscription_id'
-    });
+    .upsert(subscriptionData, { onConflict: 'stripe_subscription_id' });
 
   if (subError) {
-    console.error('Error updating subscriptions table:', subError);
+    console.error('Error upserting subscription record:', subError);
     return;
   }
+  console.log('Successfully upserted subscription record.');
 
-  console.log('Updated subscriptions table');
+  const profileUpdateData = {
+    subscription_status: subscription.status,
+    plan_id: planData.id,
+    monthly_prompt_limit: planData.prompt_limit,
+    monthly_prompts_used: 0, // Reset usage on plan change/update
+    billing_cycle_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+    billing_cycle_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
+  };
 
-  // Update profiles table
+  // 3. Update the 'profiles' table with the new subscription status and limits
   const { error: profileError } = await supabase
     .from('profiles')
-    .update({
-      subscription_status: subscription.status,
-      plan_id: planData.id,
-      monthly_prompt_limit: planData.prompt_limit,
-      monthly_prompts_used: 0, // Reset usage when subscription updates
-      billing_cycle_start: periodStart,
-      billing_cycle_end: periodEnd
-    })
+    .update(profileUpdateData)
     .eq('id', userId);
 
   if (profileError) {
     console.error('Error updating profiles table:', profileError);
     return;
   }
+  console.log('Successfully updated profiles table.');
 
-  console.log('Successfully updated both subscriptions and profiles tables');
-
-  // Verify the update
+  // 4. Verification Step
   const { data: verifyProfile, error: verifyError } = await supabase
     .from('profiles')
     .select('subscription_status, plan_id, monthly_prompt_limit')
@@ -294,7 +280,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
   if (verifyError) {
     console.error('Error verifying profile update:', verifyError);
   } else {
-    console.log('Verified profile update:', verifyProfile);
+    console.log('Verified profile after update:', verifyProfile);
   }
 }
 
