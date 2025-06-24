@@ -105,6 +105,18 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     return;
   }
 
+  // Get free plan ID
+  const { data: freePlan, error: planError } = await supabase
+    .from('plans')
+    .select('id')
+    .eq('name', 'Free')
+    .single();
+
+  if (planError) {
+    console.error('Error fetching free plan:', planError);
+    return;
+  }
+
   // Update subscription status to canceled
   await supabase
     .from('subscriptions')
@@ -119,8 +131,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .from('profiles')
     .update({
       subscription_status: 'canceled',
-      subscription_plan: 'free',
-      monthly_prompt_limit: 3
+      plan_id: freePlan.id,
+      monthly_prompt_limit: 3,
+      monthly_prompts_used: 0
     })
     .eq('id', userId);
 }
@@ -166,7 +179,18 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
 async function updateSubscriptionInDatabase(userId: string, subscription: Stripe.Subscription) {
   const planType = subscription.metadata?.planType as 'creator' | 'usage_based' || 'creator';
-  const plan = SUBSCRIPTION_PLANS[planType];
+  
+  // Get plan ID from the database
+  const { data: planData, error: planError } = await supabase
+    .from('plans')
+    .select('id, prompt_limit, overage_rate')
+    .eq('name', planType === 'creator' ? 'Creator' : 'Free')
+    .single();
+
+  if (planError) {
+    console.error('Error fetching plan:', planError);
+    return;
+  }
 
   // Update subscriptions table
   const periodStart = (subscription as any).current_period_start;
@@ -184,9 +208,7 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
       status: subscription.status,
       current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-      plan_type: planType,
-      monthly_prompt_limit: plan.promptLimit,
-      overage_rate: plan.overageRate / 100,
+      plan_id: planData.id,
       cancel_at: cancelAt ? new Date(cancelAt * 1000).toISOString() : null,
       canceled_at: canceledAt ? new Date(canceledAt * 1000).toISOString() : null
     });
@@ -196,8 +218,9 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
     .from('profiles')
     .update({
       subscription_status: subscription.status,
-      subscription_plan: planType,
-      monthly_prompt_limit: plan.promptLimit,
+      plan_id: planData.id,
+      monthly_prompt_limit: planData.prompt_limit,
+      monthly_prompts_used: 0, // Reset usage when plan changes
       billing_cycle_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
       billing_cycle_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null
     })
