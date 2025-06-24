@@ -4,29 +4,41 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { useEffect } from 'react'
+import { useSubscription } from '@/components/SubscriptionManager'
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
+  const { refreshSubscriptionStatus } = useSubscription()
 
   useEffect(() => {
     const success = searchParams.get('success')
     const sessionId = searchParams.get('session_id')
     
+    console.log('[PaymentStatus] Checking payment status:', { success, sessionId })
+    
     if (success === 'true' && sessionId) {
+      console.log('[PaymentStatus] Payment successful, refreshing subscription status...')
+      refreshSubscriptionStatus().then(() => {
+        console.log('[PaymentStatus] Subscription status refreshed after successful payment')
+      }).catch(error => {
+        console.error('[PaymentStatus] Error refreshing subscription status:', error)
+      })
+      
       toast({
         title: "Payment Successful!",
         description: "Thank you for your purchase. Your account has been upgraded.",
         variant: "default"
       })
     } else if (success === 'false' || searchParams.get('canceled') === 'true') {
+      console.log('[PaymentStatus] Payment cancelled or failed')
       toast({
         title: "Payment Cancelled",
         description: "The payment process was cancelled. Please try again if you'd like to upgrade.",
         variant: "destructive"
       })
     }
-  }, [searchParams, toast])
+  }, [searchParams, toast, refreshSubscriptionStatus])
 
   return null
 }

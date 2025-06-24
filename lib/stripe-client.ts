@@ -55,6 +55,8 @@ export class StripeClientService {
     promptLimit: number;
     billingCycleEnd?: string;
   }> {
+    console.log('[StripeClient] Getting subscription status:', { userId, forceRefresh });
+    
     // Check cache first (unless force refresh)
     if (!forceRefresh && subscriptionCache[userId]) {
       const cached = subscriptionCache[userId];
@@ -62,15 +64,18 @@ export class StripeClientService {
       
       // Return cached data if it's still fresh
       if (now - cached.timestamp < CACHE_DURATION) {
+        console.log('[StripeClient] Returning cached subscription data:', cached.data);
         return cached.data;
       }
       
       // If there's an ongoing request, wait for it
       if (cached.promise) {
+        console.log('[StripeClient] Waiting for ongoing subscription status request...');
         return cached.promise;
       }
     }
 
+    console.log('[StripeClient] Fetching fresh subscription status from server...');
     // Create new request
     const requestPromise = this.fetchSubscriptionStatus(userId);
     
@@ -82,6 +87,7 @@ export class StripeClientService {
 
     try {
       const data = await requestPromise;
+      console.log('[StripeClient] Received fresh subscription data:', data);
       
       // Cache the result
       subscriptionCache[userId] = {
@@ -92,6 +98,7 @@ export class StripeClientService {
       
       return data;
     } catch (error) {
+      console.error('[StripeClient] Error fetching subscription status:', error);
       // Clear the promise on error
       if (subscriptionCache[userId]) {
         subscriptionCache[userId].promise = undefined;
@@ -101,6 +108,7 @@ export class StripeClientService {
   }
 
   private async fetchSubscriptionStatus(userId: string) {
+    console.log('[StripeClient] Making API request for subscription status:', userId);
     const response = await fetch(`${this.baseUrl}/subscription-status`, {
       method: 'POST',
       headers: {
@@ -110,10 +118,13 @@ export class StripeClientService {
     });
 
     if (!response.ok) {
+      console.error('[StripeClient] API request failed:', response.status, response.statusText);
       throw new Error('Failed to fetch subscription status');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('[StripeClient] API response:', data);
+    return data;
   }
 
   clearSubscriptionCache(userId?: string) {

@@ -67,18 +67,22 @@ export function SubscriptionManager({ children }: SubscriptionManagerProps) {
     if (!user) return;
 
     try {
+      console.log('[SubscriptionManager] Checking subscription status for user:', user.id);
       // First check if we have cached data
       const cachedStatus = stripeService.getCachedSubscriptionStatus(user.id);
       if (cachedStatus) {
+        console.log('[SubscriptionManager] Using cached subscription status:', cachedStatus);
         setSubscriptionStatus(cachedStatus);
         return;
       }
 
       // Only make API call if no cached data
+      console.log('[SubscriptionManager] No cached data, fetching from server...');
       const status = await stripeService.getSubscriptionStatus(user.id);
+      console.log('[SubscriptionManager] Received subscription status from server:', status);
       setSubscriptionStatus(status);
     } catch (error) {
-      console.error('Error checking subscription status:', error);
+      console.error('[SubscriptionManager] Error checking subscription status:', error);
       // Assume free plan if error
       setSubscriptionStatus({ plan: 'free', status: 'inactive' });
     }
@@ -88,11 +92,13 @@ export function SubscriptionManager({ children }: SubscriptionManagerProps) {
     if (!user) return;
     
     try {
+      console.log('[SubscriptionManager] Forcing subscription status refresh for user:', user.id);
       // Force refresh from server
       const status = await stripeService.getSubscriptionStatus(user.id, true);
+      console.log('[SubscriptionManager] Received fresh subscription status:', status);
       setSubscriptionStatus(status);
     } catch (error) {
-      console.error('Error refreshing subscription status:', error);
+      console.error('[SubscriptionManager] Error refreshing subscription status:', error);
     }
   };
 
