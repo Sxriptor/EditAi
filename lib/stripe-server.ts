@@ -248,76 +248,74 @@ export const stripeServer = {
     promptLimit: number;
     billingCycleEnd?: string;
   }> {
-    type ProfileWithPlan = {
-      subscription_status: string | null;
-      monthly_prompts_used: number;
-      monthly_prompt_limit: number;
-      billing_cycle_end: string | null;
-      plan_id: number | null;
-      plans: {
-        name: string;
-        prompt_limit: number;
-        overage_rate: number;
-      } | null;
-    };
+    console.log('Getting subscription status for user:', userId);
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select(`
-        subscription_status,
-        monthly_prompts_used,
-        monthly_prompt_limit,
-        billing_cycle_end,
-        plan_id,
-        plans (
-          name,
-          prompt_limit,
-          overage_rate
-        )
-      `)
-      .eq('id', userId)
-      .single() as { data: ProfileWithPlan | null };
+    try {
+      type ProfileWithPlan = {
+        subscription_status: string | null;
+        monthly_prompts_used: number;
+        monthly_prompt_limit: number;
+        billing_cycle_end: string | null;
+        plan_id: number | null;
+        plans: {
+          name: string;
+          prompt_limit: number;
+          overage_rate: number;
+        } | null;
+      };
 
-    if (!profile) {
-      throw new Error('User not found');
-    }
+      // Get profile with plan information
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select(`
+          subscription_status,
+          monthly_prompts_used,
+          monthly_prompt_limit,
+          billing_cycle_end,
+          plan_id,
+          plans (
+            name,
+            prompt_limit,
+            overage_rate
+          )
+        `)
+        .eq('id', userId)
+        .single() as { data: ProfileWithPlan | null, error: any };
 
-    // If no plan_id or no plan found, assume free plan
-    if (!profile.plan_id || !profile.plans) {
-      const { data: freePlan } = await supabase
-        .from('plans')
-        .select('id, prompt_limit')
-        .eq('name', 'Free')
-        .single();
-
-      // Update profile with free plan if needed
-      if (freePlan && (!profile.plan_id || profile.plan_id !== freePlan.id)) {
-        await supabase
-          .from('profiles')
-          .update({
-            plan_id: freePlan.id,
-            monthly_prompt_limit: freePlan.prompt_limit,
-            subscription_status: 'inactive'
-          })
-          .eq('id', userId);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
       }
 
+      if (!profile) {
+        console.log('Profile not found, returning free plan status');
+        return {
+          plan: 'free',
+          status: 'inactive',
+          promptsUsed: 0,
+          promptLimit: 3
+        };
+      }
+
+      console.log('Found profile with plan:', profile);
+
+      return {
+        plan: profile.plans?.name.toLowerCase() || 'free',
+        status: profile.subscription_status || 'inactive',
+        promptsUsed: profile.monthly_prompts_used || 0,
+        promptLimit: profile.plans?.prompt_limit || 3,
+        billingCycleEnd: profile.billing_cycle_end || undefined
+      };
+    } catch (error) {
+      console.error('Error in getSubscriptionStatus:', error);
+      // Return free plan on error
       return {
         plan: 'free',
         status: 'inactive',
-        promptsUsed: profile.monthly_prompts_used || 0,
-        promptLimit: freePlan?.prompt_limit || 3,
-        billingCycleEnd: profile.billing_cycle_end || undefined
+        promptsUsed: 0,
+        promptLimit: 3
       };
     }
-
-    return {
-      plan: profile.plans.name.toLowerCase(),
-      status: profile.subscription_status || 'inactive',
-      promptsUsed: profile.monthly_prompts_used || 0,
-      promptLimit: profile.monthly_prompt_limit || profile.plans.prompt_limit,
-      billingCycleEnd: profile.billing_cycle_end || undefined
-    };
   },
 
   // Cancel subscription

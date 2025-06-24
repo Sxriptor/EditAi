@@ -178,6 +178,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 }
 
 async function updateSubscriptionInDatabase(userId: string, subscription: Stripe.Subscription) {
+  console.log('Updating subscription in database:', { userId, subscriptionId: subscription.id });
+  
   const planType = subscription.metadata?.planType as 'creator' | 'usage_based' || 'creator';
   
   // Get plan ID from the database
@@ -192,41 +194,54 @@ async function updateSubscriptionInDatabase(userId: string, subscription: Stripe
     return;
   }
 
-  // Update subscriptions table
-  const periodStart = (subscription as any).current_period_start;
-  const periodEnd = (subscription as any).current_period_end;
-  const cancelAt = (subscription as any).cancel_at;
-  const canceledAt = (subscription as any).canceled_at;
+  console.log('Found plan data:', planData);
 
-  await supabase
+  // Update subscriptions table
+  const periodStart = new Date((subscription as any).current_period_start * 1000).toISOString();
+  const periodEnd = new Date((subscription as any).current_period_end * 1000).toISOString();
+  const cancelAt = subscription.cancel_at ? new Date(subscription.cancel_at * 1000).toISOString() : null;
+  const canceledAt = subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null;
+
+  const { error: subError } = await supabase
     .from('subscriptions')
     .upsert({
       user_id: userId,
       stripe_subscription_id: subscription.id,
       stripe_customer_id: subscription.customer as string,
-      stripe_price_id: subscription.items.data[0]?.price.id,
-      status: subscription.status,
-      current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
       plan_id: planData.id,
-      cancel_at: cancelAt ? new Date(cancelAt * 1000).toISOString() : null,
-      canceled_at: canceledAt ? new Date(canceledAt * 1000).toISOString() : null
+      status: subscription.status,
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
+      cancel_at: cancelAt,
+      canceled_at: canceledAt
+    }, {
+      onConflict: 'stripe_subscription_id'
     });
 
+  if (subError) {
+    console.error('Error updating subscriptions table:', subError);
+    return;
+  }
+
+  console.log('Updated subscriptions table');
+
   // Update profiles table
-  await supabase
+  const { error: profileError } = await supabase
     .from('profiles')
     .update({
       subscription_status: subscription.status,
       plan_id: planData.id,
       monthly_prompt_limit: planData.prompt_limit,
-      monthly_prompts_used: 0, // Reset usage when plan changes
-      billing_cycle_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-      billing_cycle_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null
+      monthly_prompts_used: 0 // Reset usage when subscription updates
     })
     .eq('id', userId);
 
-  console.log(`Updated subscription for user ${userId} to ${planType} plan`);
+  if (profileError) {
+    console.error('Error updating profiles table:', profileError);
+    return;
+  }
+
+  console.log('Updated profiles table');
 }
 
 async function updatePaymentIntentInDatabase(paymentIntentId: string, status: string) {
