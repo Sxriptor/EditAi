@@ -126,6 +126,12 @@ export function SubscriptionManager({ children }: SubscriptionManagerProps) {
   const shouldShowModalForStatus = (status: any) => {
     if (!status) return false;
     
+    // Don't show modal if user has an active paid subscription
+    if (status.plan === 'creator' && status.status === 'active') {
+      return false;
+    }
+    
+    // Show modal for free plan or any inactive/problematic status
     return status.plan === 'free' || 
            status.status === 'inactive' ||
            status.status === 'canceled' ||
@@ -134,6 +140,11 @@ export function SubscriptionManager({ children }: SubscriptionManagerProps) {
 
   const shouldShowModal = () => {
     if (!subscriptionStatus) return false;
+    
+    // Don't show modal if user has an active paid subscription
+    if (subscriptionStatus.plan === 'creator' && subscriptionStatus.status === 'active') {
+      return false;
+    }
     
     // Show modal if user is on free plan or has inactive subscription
     return subscriptionStatus.plan === 'free' || 
