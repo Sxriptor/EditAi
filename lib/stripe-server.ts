@@ -268,132 +268,39 @@ export const stripeServer = {
   // Record prompt usage
   async recordPromptUsage(userId: string, promptCost: number = 1.0): Promise<void> {
     try {
-      console.log(`Recording prompt usage for ${userId}: ${promptCost} prompts`);
-      
-      // Primary method: Direct update with error handling and retry
-      let updateSuccess = false;
-      let attempts = 0;
-      const maxAttempts = 3;
+      console.log(`Recording prompt usage for ${userId}: ${promptCost} prompts via RPC`);
 
-      while (!updateSuccess && attempts < maxAttempts) {
-        attempts++;
-        
-        try {
-          // First get current usage
-          const { data: profile, error: fetchError } = await supabase
-            .from('profiles')
-            .select('monthly_prompts_used, plans(name)')
-            .eq('id', userId)
-            .single();
+      // Use the new, reliable RPC function to increment usage
+      const { error: rpcError } = await supabase.rpc('increment_prompt_usage_by_cost', {
+        user_id_param: userId,
+        cost_param: promptCost
+      });
 
-          if (fetchError) {
-            console.error(`Attempt ${attempts}: Error fetching profile for usage recording:`, fetchError);
-            throw fetchError;
-          }
-
-          const currentUsage = profile?.monthly_prompts_used || 0;
-          const newUsage = currentUsage + promptCost;
-          const planName = (profile as any)?.plans?.name || 'Unknown';
-
-          console.log(`Attempt ${attempts}: Usage update: ${currentUsage} -> ${newUsage} (${planName} plan)`);
-
-          // Update usage counter with the actual cost
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ monthly_prompts_used: newUsage })
-            .eq('id', userId);
-
-          if (updateError) {
-            console.error(`Attempt ${attempts}: Error updating prompt usage:`, updateError);
-            throw updateError;
-          }
-
-          console.log(`✅ Attempt ${attempts}: Successfully updated profiles table (${currentUsage} -> ${newUsage})`);
-          updateSuccess = true;
-
-        } catch (attemptError) {
-          console.error(`Attempt ${attempts} failed:`, attemptError);
-          
-          if (attempts === maxAttempts) {
-            // Final fallback: Use the database function for integer values only
-            console.log('⚠️ Falling back to database RPC function for usage tracking');
-            
-            if (promptCost === 1.0) {
-              // For standard prompts, use the existing increment function
-              const { error: rpcError } = await supabase.rpc('increment_prompt_usage', {
-                user_id_param: userId
-              });
-              
-              if (rpcError) {
-                console.error('❌ RPC fallback also failed:', rpcError);
-                throw new Error(`All tracking methods failed. Last error: ${rpcError.message}`);
-              } else {
-                console.log('✅ RPC fallback succeeded for standard prompt');
-                updateSuccess = true;
-              }
-            } else {
-              // For fractional prompts, manually round and update
-              console.log(`⚠️ Fractional prompt cost ${promptCost}, manually rounding to ${Math.ceil(promptCost)}`);
-              
-              for (let i = 0; i < Math.ceil(promptCost); i++) {
-                const { error: rpcError } = await supabase.rpc('increment_prompt_usage', {
-                  user_id_param: userId
-                });
-                
-                if (rpcError) {
-                  console.error('❌ Manual increment failed:', rpcError);
-                  throw new Error(`Manual increment failed: ${rpcError.message}`);
-                }
-              }
-              
-              console.log(`✅ Manual increment succeeded (${Math.ceil(promptCost)} increments for ${promptCost} cost)`);
-              updateSuccess = true;
-            }
-          } else {
-            // Wait before retry
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
-          }
-        }
+      if (rpcError) {
+        console.error('❌ RPC call to increment_prompt_usage_by_cost failed:', rpcError);
+        // Throw a detailed error to make debugging clear
+        throw new Error(`Failed to record prompt usage in database. RPC Error: ${rpcError.message}`);
       }
 
-      // Log the AI interaction with cost information (best effort, don't fail if this errors)
-      try {
-        const { error: logError } = await supabase
-          .from('ai_interactions')
-          .insert({
-            user_id: userId,
-            prompt_text: `AI prompt used (cost: ${promptCost})`,
-            prompt_type: 'command',
-            ai_response: { recorded: true, promptCost, method: updateSuccess ? 'direct' : 'fallback' },
-            model_used: promptCost > 1 ? 'gpt-4 + anthropic' : 'gpt-4'
-          });
+      console.log(`✅ Successfully called RPC to record ${promptCost} prompt usage for ${userId}.`);
 
-        if (logError) {
-          console.error('⚠️ Error logging AI interaction (non-critical):', logError);
-        } else {
-          console.log('✅ AI interaction logged successfully');
-        }
+      // Log the AI interaction separately. This is for analytics and is not critical to usage tracking itself.
+      // If this fails, we don't need to roll back the usage recording.
+      try {
+        await supabase.from('ai_interactions').insert({
+          user_id: userId,
+          prompt_text: `AI prompt used (cost: ${promptCost})`,
+          prompt_type: 'command',
+          ai_response: { recorded: true, promptCost, method: 'rpc' },
+          model_used: promptCost > 1 ? 'gpt-4 + anthropic' : 'gpt-4'
+        });
       } catch (logError) {
-        console.error('⚠️ Failed to log AI interaction (non-critical):', logError);
+        console.error('⚠️ Non-critical error: Failed to log AI interaction after recording usage.', logError);
       }
-
-      // Final verification: Check that the update actually happened
-      try {
-        const { data: verifyProfile } = await supabase
-          .from('profiles')
-          .select('monthly_prompts_used')
-          .eq('id', userId)
-          .single();
-          
-        console.log(`🔍 Verification: User ${userId} now has ${verifyProfile?.monthly_prompts_used || 0} prompts used`);
-      } catch (verifyError) {
-        console.error('⚠️ Verification check failed (non-critical):', verifyError);
-      }
-
-      console.log(`✅ Successfully recorded ${promptCost} prompt usage for ${userId}`);
       
     } catch (error) {
-      console.error('❌ Complete failure to record prompt usage:', error);
+      console.error('❌ Complete failure in recordPromptUsage:', error);
+      // Re-throw the error so the calling function knows something went wrong.
       throw error;
     }
   },
