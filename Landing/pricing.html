@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - ColorGrade | The World's First Video Editing Assistant</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4a9eff;
+            --border-color: #333333;
+            --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Pricing Section */
+        .pricing-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .pricing-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .pricing-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .pricing-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .pricing-card {
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-primary);
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .plan-description {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .price {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .price-period {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        .price-note {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .features-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .features-list li::before {
+            content: '✓';
+            color: var(--accent-primary);
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 107, 74, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.2rem 2rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: transform 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Usage Pricing */
+        .usage-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .usage-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .usage-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .usage-pricing {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .usage-tier {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .usage-tier:last-child {
+            border-bottom: none;
+        }
+
+        .tier-range {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tier-price {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        /* Value Proposition */
+        .value-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .value-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .value-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .value-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .value-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+        }
+
+        .faq-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-top: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .faq-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .faq-question {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .faq-answer {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .final-cta p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .pricing-card {
+                padding: 2rem;
+            }
+
+            .usage-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .value-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">ColorGrade</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="tools.html">Tools</a></li>
+                <li><a href="pricing.html" class="active">Pricing</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <a href="#" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span>💎</span>
+                Revolutionary Pricing for Revolutionary Technology
+            </div>
+            <h1>Simple <span class="highlight">Transparent Pricing</span> for the Future</h1>
+            <p>Be among the first to experience the world's first Video Editing Assistant. No subscriptions, no hidden fees - just pay for what you create.</p>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section">
+        <div class="container">
+            <div class="pricing-header">
+                <h2 class="pricing-title">One Plan, Unlimited Possibilities</h2>
+                <p class="pricing-subtitle">Get 100 AI transformations for just $20, then pay only for what you use. Perfect for creators who want flexibility without commitment.</p>
+            </div>
+            
+            <div class="pricing-card">
+                <div class="popular-badge">Most Popular</div>
+                <div class="plan-name">Creator Plan</div>
+                <div class="plan-description">Perfect for content creators, photographers, and video editors</div>
+                
+                <div class="price">
+                    <span class="price-amount">$20</span>
+                    <span class="price-period">for 100 prompts</span>
+                    <div class="price-note">Then $0.25 per additional prompt</div>
+                </div>
+                
+                <ul class="features-list">
+                    <li>100 AI transformations included</li>
+                    <li>All professional editing tools</li>
+                    <li>Unlimited exports in any format</li>
+                    <li>Access to 10,000+ LUTs</li>
+                    <li>Film stock emulation library</li>
+                    <li>Real-time collaboration</li>
+                    <li>Priority support</li>
+                    <li>No monthly commitments</li>
+                </ul>
+                
+                <button class="btn-primary">
+                    <span>🚀</span>
+                    Start Creating Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Pricing -->
+    <section class="usage-section">
+        <div class="container">
+            <div class="usage-grid">
+                <div class="usage-content">
+                    <h3>Fair Usage-Based Pricing</h3>
+                    <p>After your first 100 prompts, you only pay for what you use. No waste, no commitment - just fair pricing that scales with your creativity.</p>
+                    <p>Most creators find 100 prompts lasts 2-3 months of regular use. Heavy users love the predictable per-prompt pricing.</p>
+                </div>
+                
+                <div class="usage-pricing">
+                    <div class="usage-tier">
+                        <div class="tier-range">First 100 prompts</div>
+                        <div class="tier-price">$20 (Included)</div>
+                    </div>
+                    <div class="usage-tier">
+                        <div class="tier-range">101-500 prompts</div>
+                        <div class="tier-price">$0.25 each</div>
+                    </div>
+                    <div class="usage-tier">
+                        <div class="tier-range">501-1000 prompts</div>
+                        <div class="tier-price">$0.20 each</div>
+                    </div>
+                    <div class="usage-tier">
+                        <div class="tier-range">1000+ prompts</div>
+                        <div class="tier-price">$0.15 each</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition -->
+    <section class="value-section">
+        <div class="container">
+            <h2 class="pricing-title">Why ColorGrade is Worth Every Penny</h2>
+            <p class="pricing-subtitle">Compare what you get with ColorGrade vs. traditional software and other AI tools.</p>
+            
+            <div class="value-grid">
+                <div class="value-item">
+                    <div class="value-icon">💰</div>
+                    <div class="value-title">Saves You Money</div>
+                    <div class="value-description">Replace $200/month software subscriptions with pay-per-use pricing</div>
+                </div>
+                
+                <div class="value-item">
+                    <div class="value-icon">⏰</div>
+                    <div class="value-title">Saves You Time</div>
+                    <div class="value-description">15 minutes of work becomes 15 seconds. That's 60x faster than traditional editing</div>
+                </div>
+                
+                <div class="value-item">
+                    <div class="value-icon">🎓</div>
+                    <div class="value-title">No Learning Curve</div>
+                    <div class="value-description">Skip months of tutorials. Start creating professional content immediately</div>
+                </div>
+                
+                <div class="value-item">
+                    <div class="value-icon">🔧</div>
+                    <div class="value-title">Professional Results</div>
+                    <div class="value-description">Cinema-grade color science and tools that rival $10,000 software</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="pricing-title">Frequently Asked Questions</h2>
+            
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">What counts as a "prompt"?</div>
+                    <div class="faq-answer">Each time you ask ColorGrade to transform your content with AI counts as one prompt. Manual editing with our professional tools is completely free and unlimited.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Can I use the professional editing tools without prompts?</div>
+                    <div class="faq-answer">Absolutely! All our professional color wheels, curves, LUTs, and editing tools are included and unlimited. You only pay for AI transformations.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">What happens if I don't like a result?</div>
+                    <div class="faq-answer">If you're not satisfied with an AI transformation, we'll refund that prompt credit. We're confident you'll love the results, but we stand behind our quality.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Do prompts expire?</div>
+                    <div class="faq-answer">Never! Your prompt credits roll over indefinitely. Buy once, use whenever you want. No monthly subscriptions or expiration dates.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Can I get a refund?</div>
+                    <div class="faq-answer">Yes! We offer a 30-day money-back guarantee. If ColorGrade doesn't revolutionize your workflow, we'll refund your purchase completely.</div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">Is there a free trial?</div>
+                    <div class="faq-answer">We include 3 free prompts so you can experience the magic before purchasing. No credit card required to start.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>Ready to Transform Your Creative Process?</h2>
+            <p>Join the creative revolution. Be among the first to experience the world's first Video Editing Assistant and see why creators are calling it "the future of editing."</p>
+            <button class="btn-primary" style="max-width: 300px; margin: 0 auto;">
+                <span>✨</span>
+                Start Your Journey
+            </button>
+        </div>
+    </section>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+    </script>
+</body>
+</html> 

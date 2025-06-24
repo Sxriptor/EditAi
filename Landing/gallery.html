@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - ColorGrade | Incredible AI Transformations</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4a9eff;
+            --border-color: #333333;
+            --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Gallery Filters */
+        .gallery-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Gallery Grid */
+        .gallery-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .gallery-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-primary);
+        }
+
+        .before-after-container {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .before-after-slider {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .before-image,
+        .after-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .after-image {
+            clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+            transition: clip-path 0.3s ease;
+        }
+
+        .gallery-item:hover .after-image {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+        }
+
+        .slider-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .gallery-info {
+            padding: 1.5rem;
+        }
+
+        .gallery-info h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .gallery-prompt {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .gallery-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .gallery-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 107, 74, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Showcase Section */
+        .showcase-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .showcase-item {
+            text-align: center;
+        }
+
+        .showcase-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .showcase-label {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .showcase-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-filters {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">ColorGrade</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="gallery.html" class="active">Gallery</a></li>
+                <li><a href="tools.html">Tools</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <a href="#" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span>🎨</span>
+                Real Transformations, Real Results
+            </div>
+            <h1>Incredible <span class="highlight">AI Transformations</span> Made Simple</h1>
+            <p>See what happens when creativity meets AI. These aren't just edits - they're complete transformations that would take hours in traditional software, created in seconds with simple prompts.</p>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section">
+        <div class="container">
+            <div class="gallery-filters">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Portraits</button>
+                <button class="filter-btn">Landscapes</button>
+                <button class="filter-btn">Cinematic</button>
+                <button class="filter-btn">Commercial</button>
+                <button class="filter-btn">Creative</button>
+            </div>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #666, #999);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #ff6b4a, #4a9eff);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>LinkedIn Professional</h3>
+                        <div class="gallery-prompt">"Make me look professional for LinkedIn"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>3.2s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>2.4k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Portrait</span>
+                            <span class="tag">Professional</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #333, #666);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #ff9500, #ff6b4a);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>Golden Hour Magic</h3>
+                        <div class="gallery-prompt">"Add that golden hour glow"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>2.8s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>3.1k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Landscape</span>
+                            <span class="tag">Warm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #444, #777);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #1a1a2e, #16213e);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>Cinematic Drama</h3>
+                        <div class="gallery-prompt">"Make this look like a movie scene"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>4.1s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>1.8k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Cinematic</span>
+                            <span class="tag">Moody</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #555, #888);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #ff006e, #8338ec);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>Neon Nights</h3>
+                        <div class="gallery-prompt">"Tokyo neon vibes"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>3.7s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>4.2k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Creative</span>
+                            <span class="tag">Vibrant</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #666, #999);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #2d5016, #3e7b27);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>Natural Beauty</h3>
+                        <div class="gallery-prompt">"Enhance the natural colors"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>2.1s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>2.9k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Nature</span>
+                            <span class="tag">Organic</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-item">
+                    <div class="before-after-container">
+                        <div class="before-after-slider">
+                            <div class="before-image" style="background-image: linear-gradient(45deg, #444, #777);"></div>
+                            <div class="after-image" style="background-image: linear-gradient(45deg, #b5651d, #d4af37);"></div>
+                            <div class="slider-handle">⟷</div>
+                        </div>
+                    </div>
+                    <div class="gallery-info">
+                        <h3>Luxury Feel</h3>
+                        <div class="gallery-prompt">"Make me look like I just bought a Porsche"</div>
+                        <div class="gallery-stats">
+                            <div class="stat-item">
+                                <span>⚡</span>
+                                <span>3.9s</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️</span>
+                                <span>5.1k</span>
+                            </div>
+                        </div>
+                        <div class="gallery-tags">
+                            <span class="tag">Luxury</span>
+                            <span class="tag">Portrait</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Section -->
+    <section class="showcase-section">
+        <div class="container">
+            <h2 class="section-title">The Numbers Don't Lie</h2>
+            <p class="section-subtitle">ColorGrade is transforming how creators work, one prompt at a time.</p>
+            
+            <div class="showcase-grid">
+                <div class="showcase-item">
+                    <div class="showcase-number">500K+</div>
+                    <div class="showcase-label">Transformations Created</div>
+                    <div class="showcase-description">Every single one unique and perfectly tailored</div>
+                </div>
+                
+                <div class="showcase-item">
+                    <div class="showcase-number">2.3s</div>
+                    <div class="showcase-label">Average Processing Time</div>
+                    <div class="showcase-description">What used to take hours now happens in seconds</div>
+                </div>
+                
+                <div class="showcase-item">
+                    <div class="showcase-number">98%</div>
+                    <div class="showcase-label">Creator Satisfaction</div>
+                    <div class="showcase-description">Creators love the results on first try</div>
+                </div>
+                
+                <div class="showcase-item">
+                    <div class="showcase-number">15min</div>
+                    <div class="showcase-label">Time Saved Per Edit</div>
+                    <div class="showcase-description">Multiply that by hundreds of edits per month</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Your Next Masterpiece Awaits</h2>
+            <p>Stop dreaming about perfect edits and start creating them. Join the creators who've already discovered the future of editing.</p>
+            <a href="pricing.html" class="btn-primary">
+                <span>✨</span>
+                Create Your First Transformation
+            </a>
+        </div>
+    </section>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html> 

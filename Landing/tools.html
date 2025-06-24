@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Tools - ColorGrade | Cinema-Grade Editing Power</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4a9eff;
+            --border-color: #333333;
+            --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Tools Categories */
+        .tools-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 4rem;
+            flex-wrap: wrap;
+        }
+
+        .tool-nav-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tool-nav-btn:hover,
+        .tool-nav-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Tools Section */
+        .tools-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 4rem;
+            line-height: 1.6;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 6rem;
+        }
+
+        .tool-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
+        }
+
+        .tool-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .tool-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .tool-features li::before {
+            content: '✓';
+            color: var(--accent-primary);
+            font-weight: bold;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 107, 74, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: rgba(255, 107, 74, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Integrations Section */
+        .integrations-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+        }
+
+        .integrations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .integration-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .integration-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+        }
+
+        .integration-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .integration-card h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .integration-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Showcase Section */
+        .showcase-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-top: 4rem;
+        }
+
+        .showcase-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .showcase-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .showcase-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .showcase-visual {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .showcase-visual::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: var(--accent-gradient);
+            opacity: 0.1;
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .visual-content {
+            text-align: center;
+            z-index: 1;
+        }
+
+        .visual-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .visual-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .showcase-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .showcase-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">ColorGrade</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html">Features</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="tools.html" class="active">Tools</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <a href="#" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span>🛠️</span>
+                Professional-Grade Tools
+            </div>
+            <h1>Cinema-Grade <span class="highlight">Editing Power</span> in Your Browser</h1>
+            <p>Every tool you need for professional editing, powered by AI and designed for speed. From basic adjustments to advanced color science - all without leaving your browser.</p>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools-section">
+        <div class="container">
+            <div class="tools-nav">
+                <button class="tool-nav-btn active">All Tools</button>
+                <button class="tool-nav-btn">AI Features</button>
+                <button class="tool-nav-btn">Color Tools</button>
+                <button class="tool-nav-btn">Integrations</button>
+            </div>
+
+            <h2 class="section-title">Professional Tools That Understand You</h2>
+            <p class="section-subtitle">Every tool is AI-enhanced and designed to work the way you think, not the way software traditionally works.</p>
+            
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">🎨</div>
+                    <h3>AI Color Wheels</h3>
+                    <p>Professional 3-way color correction with AI assistance. Get perfect color balance with intelligent suggestions that understand your creative intent.</p>
+                    <ul class="tool-features">
+                        <li>Cinema-grade color science</li>
+                        <li>AI-powered suggestions</li>
+                        <li>Real-time preview</li>
+                        <li>Non-destructive workflow</li>
+                    </ul>
+                    <div class="tool-badge">Core Tool</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📈</div>
+                    <h3>Smart Curves</h3>
+                    <p>Precision curve adjustments that learn from your style. RGB, Luma, and individual channel control with AI-powered curve suggestions.</p>
+                    <ul class="tool-features">
+                        <li>Multi-channel curve control</li>
+                        <li>Automatic curve suggestions</li>
+                        <li>Histogram integration</li>
+                        <li>Custom curve presets</li>
+                    </ul>
+                    <div class="tool-badge">Advanced</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🌈</div>
+                    <h3>Intelligent LUTs</h3>
+                    <p>Access thousands of professional LUTs with AI-powered recommendations. Custom LUT creation and automatic LUT matching for consistent looks.</p>
+                    <ul class="tool-features">
+                        <li>10,000+ professional LUTs</li>
+                        <li>AI-powered LUT matching</li>
+                        <li>Custom LUT creation</li>
+                        <li>Brand-specific LUT libraries</li>
+                    </ul>
+                    <div class="tool-badge">Essential</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🎬</div>
+                    <h3>Film Emulation</h3>
+                    <p>Authentic film stock emulation with grain, halation, and color response modeling. From vintage Kodak to modern digital cinema looks.</p>
+                    <ul class="tool-features">
+                        <li>50+ authentic film stocks</li>
+                        <li>Realistic grain simulation</li>
+                        <li>Halation and bloom effects</li>
+                        <li>Custom film stock creation</li>
+                    </ul>
+                    <div class="tool-badge">Creative</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">⚡</div>
+                    <h3>HDR Processing</h3>
+                    <p>Advanced HDR tone mapping with extended dynamic range processing. Handle extreme lighting conditions with cinema-grade algorithms.</p>
+                    <ul class="tool-features">
+                        <li>Extended dynamic range</li>
+                        <li>Advanced tone mapping</li>
+                        <li>Highlight recovery</li>
+                        <li>Shadow detail enhancement</li>
+                    </ul>
+                    <div class="tool-badge">Pro</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🎯</div>
+                    <h3>Selective Adjustments</h3>
+                    <p>AI-powered masking and selective color adjustments. Target specific colors, objects, or areas with intelligent selection tools.</p>
+                    <ul class="tool-features">
+                        <li>AI-powered object masking</li>
+                        <li>Color range selection</li>
+                        <li>Luminance masking</li>
+                        <li>Feathering and refinement</li>
+                    </ul>
+                    <div class="tool-badge">Intelligent</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">🔄</div>
+                    <h3>Batch Processing</h3>
+                    <p>Apply your perfect look to hundreds of images or video clips instantly. Smart batch processing with consistency checking.</p>
+                    <ul class="tool-features">
+                        <li>Unlimited batch processing</li>
+                        <li>Consistency checking</li>
+                        <li>Custom action recording</li>
+                        <li>Progress monitoring</li>
+                    </ul>
+                    <div class="tool-badge">Efficiency</div>
+                </div>
+
+                <div class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <h3>Advanced Analytics</h3>
+                    <p>Real-time image analysis with histograms, vectorscopes, and waveform monitors. Professional monitoring tools for precise control.</p>
+                    <ul class="tool-features">
+                        <li>Real-time histograms</li>
+                        <li>Vectorscope monitoring</li>
+                        <li>Waveform analysis</li>
+                        <li>Color gamut warnings</li>
+                    </ul>
+                    <div class="tool-badge">Professional</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations Section -->
+    <section class="integrations-section">
+        <div class="container">
+            <h2 class="section-title">Seamless Integrations</h2>
+            <p class="section-subtitle">ColorGrade works with every tool in your creative workflow. Start here, finish anywhere.</p>
+            
+            <div class="integrations-grid">
+                <div class="integration-card">
+                    <div class="integration-logo">🎥</div>
+                    <h4>DaVinci Resolve</h4>
+                    <p>Native integration with project import/export and LUT compatibility</p>
+                </div>
+                
+                <div class="integration-card">
+                    <div class="integration-logo">🎬</div>
+                    <h4>Adobe Premiere</h4>
+                    <p>Direct export to Premiere projects with metadata preservation</p>
+                </div>
+                
+                <div class="integration-card">
+                    <div class="integration-logo">🎨</div>
+                    <h4>Photoshop</h4>
+                    <p>Layer-based export with adjustment layers and smart objects</p>
+                </div>
+                
+                <div class="integration-card">
+                    <div class="integration-logo">📱</div>
+                    <h4>Mobile Apps</h4>
+                    <p>Export optimized for Instagram, TikTok, and mobile editing apps</p>
+                </div>
+                
+                <div class="integration-card">
+                    <div class="integration-logo">☁️</div>
+                    <h4>Cloud Storage</h4>
+                    <p>Direct integration with Google Drive, Dropbox, and OneDrive</p>
+                </div>
+                
+                <div class="integration-card">
+                    <div class="integration-logo">🔗</div>
+                    <h4>API Access</h4>
+                    <p>Custom integrations with our comprehensive REST API</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showcase Section -->
+    <section class="showcase-section">
+        <div class="container">
+            <div class="showcase-grid">
+                <div class="showcase-content">
+                    <h3>Built for Professionals, Designed for Everyone</h3>
+                    <p>ColorGrade combines the power of $10,000 professional software with the simplicity of consumer apps. Get Hollywood-grade results without the Hollywood-grade learning curve.</p>
+                    
+                    <div class="showcase-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Professional Tools</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">0.1s</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Support</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-visual">
+                    <div class="visual-content">
+                        <div class="visual-icon">🛠️</div>
+                        <div class="visual-text">Professional Tools at Your Fingertips</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Unleash Your Creativity?</h2>
+            <p>Stop fighting with complicated software. Start creating with tools that understand your vision and help you achieve it faster than ever before.</p>
+            <a href="pricing.html" class="btn-primary">
+                <span>🚀</span>
+                Start Using Professional Tools
+            </a>
+        </div>
+    </section>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
+        // Tool navigation
+        document.querySelectorAll('.tool-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html> 

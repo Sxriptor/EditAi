@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - ColorGrade | The World's First Video Editing Assistant</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4a9eff;
+            --border-color: #333333;
+            --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 1.6rem;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1.6rem;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.6rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 6.4rem 0 3.2rem;
+            text-align: center;
+            background: var(--bg-primary);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.6rem;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 1.2rem;
+            line-height: 1.1;
+        }
+
+        .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto 2.4rem;
+            line-height: 1.6;
+        }
+
+        /* Features Grid */
+        .features-section {
+            padding: 4.8rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 480px;
+            margin: 0 auto 3.2rem;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.6rem;
+            margin-bottom: 4.8rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-benefits {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-benefits li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .feature-benefits li::before {
+            content: '✓';
+            color: var(--accent-primary);
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 107, 74, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: rgba(255, 107, 74, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Comparison Section */
+        .comparison-section {
+            padding: 6rem 0;
+            background: var(--bg-primary);
+        }
+
+        .comparison-table {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 3rem;
+        }
+
+        .comparison-header {
+            background: var(--bg-tertiary);
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-header h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .comparison-header h4:first-child {
+            text-align: left;
+        }
+
+        .comparison-row {
+            padding: 1.5rem 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-feature {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .comparison-check {
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .check-yes {
+            color: var(--accent-primary);
+        }
+
+        .check-no {
+            color: var(--text-muted);
+        }
+
+        .check-partial {
+            color: #ffa500;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            background: var(--bg-secondary);
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .cta-section p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.2rem 2.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-header,
+            .comparison-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .comparison-header h4:first-child {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">ColorGrade</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="features.html" class="active">Features</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="tools.html">Tools</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <a href="#" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span>🚀</span>
+                World's First Video Editing Assistant
+            </div>
+            <h1>Revolutionary <span class="highlight">AI Features</span> That Change Everything</h1>
+            <p>ColorGrade isn't just another AI tool - it's the future of creative editing. Experience features that no other platform offers, designed specifically for creators who demand both speed and perfection.</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Game-Changing Features</h2>
+            <p class="section-subtitle">Every feature is designed to give you superpowers. This is what the future of editing looks like.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Memory Engine</h3>
+                    <p>ColorGrade remembers your style, preferences, and past edits. The more you use it, the better it gets at understanding exactly what you want - before you even ask.</p>
+                    <ul class="feature-benefits">
+                        <li>Learns your unique editing style over time</li>
+                        <li>Suggests edits based on your history</li>
+                        <li>Remembers client preferences and brand guidelines</li>
+                        <li>Adapts to different project types automatically</li>
+                    </ul>
+                    <div class="feature-badge">Revolutionary</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">✨</div>
+                    <h3>Visual Prompt Magic</h3>
+                    <p>Describe what you want in plain English and watch it happen. "Make me look like I just bought a Porsche" - done. No technical jargon, no complex menus.</p>
+                    <ul class="feature-benefits">
+                        <li>Natural language processing for creative intent</li>
+                        <li>Understands mood, style, and emotion</li>
+                        <li>Contextual awareness of your content</li>
+                        <li>Instant preview of results</li>
+                    </ul>
+                    <div class="feature-badge">Exclusive</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Professional Editor</h3>
+                    <p>Start with AI, then dive deep with cinema-grade controls. Professional color wheels, curves, and adjustments that rival $10,000 software - all in your browser.</p>
+                    <ul class="feature-benefits">
+                        <li>Cinema-grade color science</li>
+                        <li>Professional color wheels and curves</li>
+                        <li>Real-time preview with zero lag</li>
+                        <li>Non-destructive editing workflow</li>
+                    </ul>
+                    <div class="feature-badge">Pro-Grade</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Speed</h3>
+                    <p>What takes hours in traditional software happens in seconds. Our cloud-powered processing means you spend time creating, not waiting for renders.</p>
+                    <ul class="feature-benefits">
+                        <li>Sub-second AI processing</li>
+                        <li>Real-time preview without rendering</li>
+                        <li>Instant export in any format</li>
+                        <li>Cloud-powered scalability</li>
+                    </ul>
+                    <div class="feature-badge">Ultra-Fast</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Smart Workflows</h3>
+                    <p>ColorGrade adapts to how you work. Edit entirely in-app, export to your favorite software, or create custom workflows that fit your exact process.</p>
+                    <ul class="feature-benefits">
+                        <li>Seamless integration with all major software</li>
+                        <li>Custom workflow automation</li>
+                        <li>Batch processing capabilities</li>
+                        <li>Team collaboration features</li>
+                    </ul>
+                    <div class="feature-badge">Flexible</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Context Awareness</h3>
+                    <p>ColorGrade understands what you're creating. Portrait for LinkedIn? Wedding video? YouTube thumbnail? It automatically optimizes for your specific use case.</p>
+                    <ul class="feature-benefits">
+                        <li>Platform-specific optimization</li>
+                        <li>Automatic format recommendations</li>
+                        <li>Content-aware adjustments</li>
+                        <li>Brand consistency enforcement</li>
+                    </ul>
+                    <div class="feature-badge">Intelligent</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison-section">
+        <div class="container">
+            <h2 class="section-title">How ColorGrade Compares</h2>
+            <p class="section-subtitle">See why ColorGrade is in a league of its own compared to traditional editing software and other AI tools.</p>
+            
+            <div class="comparison-table">
+                <div class="comparison-header">
+                    <h4>Feature</h4>
+                    <h4>ColorGrade</h4>
+                    <h4>Traditional Software</h4>
+                    <h4>Other AI Tools</h4>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">AI-Powered Editing</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-no">✗</div>
+                    <div class="comparison-check check-partial">△</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Professional Controls</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-no">✗</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Memory & Learning</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-no">✗</div>
+                    <div class="comparison-check check-no">✗</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Natural Language Prompts</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-no">✗</div>
+                    <div class="comparison-check check-partial">△</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Real-time Preview</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-partial">△</div>
+                    <div class="comparison-check check-no">✗</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Cloud Processing</div>
+                    <div class="comparison-check check-yes">✓</div>
+                    <div class="comparison-check check-no">✗</div>
+                    <div class="comparison-check check-partial">△</div>
+                </div>
+                
+                <div class="comparison-row">
+                    <div class="comparison-feature">Learning Curve</div>
+                    <div class="comparison-check check-yes">Minutes</div>
+                    <div class="comparison-check check-no">Months</div>
+                    <div class="comparison-check check-partial">Hours</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Experience the Future?</h2>
+            <p>Join thousands of creators who've already discovered what editing feels like when AI meets professional tools. Your creative breakthrough is one click away.</p>
+            <a href="pricing.html" class="btn-primary">
+                <span>🚀</span>
+                Start Creating Now
+            </a>
+        </div>
+    </section>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+    </script>
+</body>
+</html> 

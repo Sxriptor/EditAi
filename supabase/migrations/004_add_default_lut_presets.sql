@@ -1,0 +1,26 @@
+-- Add default LUT presets to the lut_presets table
+INSERT INTO public.lut_presets (name, description, category, color_adjustments, is_default, is_premium) VALUES
+('Hollywood Blockbuster', 'Cinematic orange and teal look with dramatic contrast', 'film', '{"exposure": [20], "contrast": [45], "highlights": [-30], "shadows": [25], "saturation": [35], "temperature": [35], "brightness": [10], "vibrance": [30], "clarity": [15], "hue": [5]}', true, false),
+('Film Noir', 'Classic black and white cinema look with strong shadows', 'film', '{"exposure": [-20], "contrast": [55], "highlights": [-35], "shadows": [40], "saturation": [-15], "temperature": [-10], "brightness": [-10], "vibrance": [15], "clarity": [30], "hue": [-5]}', true, false),
+('Sci-Fi Blue', 'Futuristic blue-tinted cyberpunk aesthetic', 'film', '{"exposure": [15], "contrast": [60], "highlights": [-40], "shadows": [35], "saturation": [60], "temperature": [-30], "brightness": [5], "vibrance": [50], "clarity": [25], "hue": [15]}', true, false),
+('Action Orange', 'High-energy orange action movie look', 'film', '{"exposure": [10], "contrast": [40], "highlights": [-20], "shadows": [20], "saturation": [45], "temperature": [30], "brightness": [5], "vibrance": [35], "clarity": [20]}', true, false),
+('Kodak Portra', 'Warm film emulation with natural skin tones', 'film', '{"exposure": [5], "contrast": [25], "highlights": [-10], "shadows": [15], "saturation": [20], "temperature": [15], "brightness": [0], "vibrance": [25], "clarity": [10]}', true, false),
+('Fuji Film', 'Cool film emulation with enhanced blues and greens', 'film', '{"exposure": [0], "contrast": [30], "highlights": [-15], "shadows": [20], "saturation": [25], "temperature": [-10], "brightness": [0], "vibrance": [30], "clarity": [15]}', true, false),
+('70s Warm', 'Vintage 1970s warm amber tones', 'film', '{"exposure": [10], "contrast": [35], "highlights": [-15], "shadows": [25], "saturation": [30], "temperature": [25], "brightness": [5], "vibrance": [20], "clarity": [5]}', true, false),
+('Polaroid', 'Instant camera look with soft pastels', 'film', '{"exposure": [0], "contrast": [20], "highlights": [-5], "shadows": [10], "saturation": [15], "temperature": [10], "brightness": [5], "vibrance": [15], "clarity": [0]}', true, false),
+
+('Clean Minimal', 'Modern clean look with neutral tones', 'lifestyle', '{"exposure": [5], "contrast": [15], "highlights": [-5], "shadows": [5], "saturation": [10], "temperature": [0], "brightness": [5], "vibrance": [10], "clarity": [10]}', true, false),
+('Instagram Pop', 'Social media vibrant look', 'lifestyle', '{"exposure": [10], "contrast": [25], "highlights": [-10], "shadows": [15], "saturation": [40], "temperature": [5], "brightness": [5], "vibrance": [35], "clarity": [15]}', true, false),
+('Golden Hour', 'Warm sunset natural lighting', 'lifestyle', '{"exposure": [15], "contrast": [20], "highlights": [-10], "shadows": [20], "saturation": [25], "temperature": [20], "brightness": [10], "vibrance": [25], "clarity": [5]}', true, false),
+('Ocean Blue', 'Cool oceanic blues and teals', 'lifestyle', '{"exposure": [5], "contrast": [25], "highlights": [-10], "shadows": [15], "saturation": [30], "temperature": [-15], "brightness": [0], "vibrance": [25], "clarity": [10]}', true, false),
+
+('Neon Dreams', 'Retro neon cyberpunk aesthetics', 'artistic', '{"exposure": [20], "contrast": [50], "highlights": [-25], "shadows": [30], "saturation": [60], "temperature": [-20], "brightness": [10], "vibrance": [50], "clarity": [25]}', true, false),
+('Psychedelic', 'Vibrant rainbow color explosion', 'artistic', '{"exposure": [15], "contrast": [45], "highlights": [-20], "shadows": [25], "saturation": [70], "temperature": [10], "brightness": [5], "vibrance": [60], "clarity": [20]}', true, false),
+('Cyberpunk', 'Dark futuristic neon-lit cityscape', 'artistic', '{"exposure": [10], "contrast": [60], "highlights": [-30], "shadows": [35], "saturation": [55], "temperature": [-25], "brightness": [0], "vibrance": [45], "clarity": [30]}', true, false),
+('Infrared', 'False-color infrared photography effect', 'artistic', '{"exposure": [10], "contrast": [40], "highlights": [-15], "shadows": [20], "saturation": [50], "temperature": [30], "brightness": [5], "vibrance": [40], "clarity": [20]}', true, false),
+
+('Skin Perfection', 'Flattering portrait skin tones', 'professional', '{"exposure": [5], "contrast": [20], "highlights": [-5], "shadows": [10], "saturation": [15], "temperature": [10], "brightness": [5], "vibrance": [20], "clarity": [10]}', true, false),
+('Wedding Soft', 'Soft romantic wedding photography', 'professional', '{"exposure": [10], "contrast": [15], "highlights": [-5], "shadows": [10], "saturation": [20], "temperature": [15], "brightness": [10], "vibrance": [25], "clarity": [5]}', true, false),
+('Fashion Bold', 'High-contrast fashion photography', 'professional', '{"exposure": [5], "contrast": [40], "highlights": [-20], "shadows": [20], "saturation": [35], "temperature": [5], "brightness": [0], "vibrance": [30], "clarity": [25]}', true, false)
+
+ON CONFLICT (name) DO NOTHING; 

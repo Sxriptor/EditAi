@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ColorGrade - Professional Color Grading Made Simple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --text-muted: #666666;
+            --accent-primary: #ff6b4a;
+            --accent-secondary: #4a9eff;
+            --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
+            --border-color: #333333;
+            --hover-bg: #333333;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-muted: #999999;
+            --border-color: #e0e0e0;
+            --hover-bg: #f0f0f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        [data-theme="light"] header {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        nav {
+            padding: 1rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.45rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--hover-bg);
+        }
+
+        .cta-button {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.65rem 1.45rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 107, 74, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3.2rem;
+            align-items: center;
+            z-index: 2;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 480px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.6rem;
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        .hero .highlight {
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 40px rgba(255, 107, 74, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 0.8rem 1.6rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .hero-visual {
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            height: 400px;
+        }
+
+        .hero-image {
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .hero-image:nth-child(1) {
+            background: linear-gradient(135deg, #ff6b4a, #ff8a4a);
+        }
+
+        .hero-image:nth-child(2) {
+            background: linear-gradient(135deg, #4a9eff, #4a7fff);
+            margin-top: 1.6rem;
+        }
+
+        .hero-image:nth-child(3) {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            margin-top: -1.6rem;
+        }
+
+        .hero-image:nth-child(4) {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .hero-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hero-image:hover::after {
+            opacity: 1;
+        }
+
+        /* Prompt Demo Section */
+        .prompt-demo {
+            padding: 4.8rem 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .prompt-demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3.2rem;
+            align-items: center;
+        }
+
+        .demo-header h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .demo-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.6rem;
+        }
+
+        .prompt-interface {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 13px;
+            padding: 1.6rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .prompt-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .prompt-input {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            min-height: 1.2rem;
+        }
+
+        .typing-text {
+            color: var(--accent-primary);
+        }
+
+        .cursor-blink {
+            animation: blink 1s infinite;
+            color: var(--accent-primary);
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+
+        .quick-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .quick-btn:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .result-preview {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 13px;
+            padding: 1.6rem;
+        }
+
+        .before-after {
+            display: flex;
+            align-items: center;
+            gap: 1.6rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .result-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.6rem;
+            font-weight: 500;
+        }
+
+        .result-image {
+            height: 96px;
+            border-radius: 10px;
+            margin-bottom: 0.4rem;
+        }
+
+        .result-image.basic {
+            background: linear-gradient(135deg, #4a5568, #718096);
+        }
+
+        .result-image.enhanced {
+            background: linear-gradient(135deg, #ff6b4a, #4a9eff);
+            box-shadow: 0 8px 32px rgba(255, 107, 74, 0.3);
+        }
+
+        .result-arrow {
+            font-size: 2rem;
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+
+        .ai-process {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .process-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            padding: 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .process-step.active {
+            background: rgba(255, 107, 74, 0.1);
+        }
+
+        .step-icon {
+            font-size: 1.5rem;
+        }
+
+        .process-step span:last-child {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* Editor Showcase Section */
+        .editor-showcase {
+            padding: 8rem 0;
+            background: var(--bg-primary);
+        }
+
+        .editor-showcase-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .editor-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .editor-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+        }
+
+        .editor-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .editor-feature {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .editor-feature .feature-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 74, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .editor-feature h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .editor-feature p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .editor-interface {
+            position: relative;
+        }
+
+        .interface-mockup {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .interface-header {
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
+
+        .interface-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .interface-body {
+            padding: 1.5rem;
+        }
+
+        .control-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-item {
+            display: grid;
+            grid-template-columns: 80px 1fr 50px;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .control-slider {
+            position: relative;
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .slider-track {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+            width: 60%;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid var(--accent-primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+        }
+
+        .control-value {
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .ai-assist {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 107, 74, 0.1);
+            border: 1px solid rgba(255, 107, 74, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .ai-icon {
+            font-size: 1rem;
+        }
+
+        /* Benefits Section */
+        .benefits {
+            padding: 8rem 0;
+            background: var(--bg-primary);
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .benefit-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .benefit-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--accent-gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .benefit-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .benefit-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .benefit-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .benefit-feature {
+            margin-top: auto;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: rgba(255, 107, 74, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Workflow Steps */
+        .workflow-steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 4rem;
+        }
+
+        .workflow-step {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-step:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .workflow-step::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 16px 16px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .workflow-step:hover::before {
+            opacity: 1;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .step-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .step-content h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-visual {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .upload-demo {
+            text-align: center;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: var(--accent-primary);
+            background: rgba(255, 107, 74, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-box p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .prompt-examples {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .example-prompt {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-family: 'SF Mono', Monaco, monospace;
+            color: var(--accent-primary);
+            font-size: 0.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .example-prompt:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .example-prompt:nth-child(3) {
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .results-demo {
+            text-align: center;
+        }
+
+        .result-formats {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .format-item {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .format-item:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .format-item:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .format-item:nth-child(4) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .customize-demo {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .control-preview {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-item-mini {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .control-item-mini span {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 60px;
+        }
+
+        .mini-slider {
+            flex: 1;
+            height: 3px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+
+        .mini-slider::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 65%;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        /* Final CTA Section */
+        .final-cta {
+            padding: 8rem 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .cta-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary.large,
+        .btn-secondary.large {
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+        }
+
+        .cta-features {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .cta-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 8rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-badge {
+            display: inline-block;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .features-showcase {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-bottom: 6rem;
+        }
+
+        .features-showcase:nth-child(even) {
+            direction: rtl;
+        }
+
+        .features-showcase:nth-child(even) > * {
+            direction: ltr;
+        }
+
+        .feature-content h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: var(--accent-primary);
+            font-weight: bold;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 107, 74, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .feature-visual {
+            position: relative;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .feature-visual::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent-gradient);
+            opacity: 0.1;
+            border-radius: 16px;
+        }
+
+        .feature-visual-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .feature-visual-content .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .feature-visual-content h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-visual-content p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Gallery Section */
+        .gallery {
+            padding: 8rem 0;
+            background: var(--bg-primary);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item:nth-child(1) {
+            background: linear-gradient(135deg, #ff6b4a, #c0392b);
+        }
+
+        .gallery-item:nth-child(2) {
+            background: linear-gradient(135deg, #4a9eff, #2980b9);
+        }
+
+        .gallery-item:nth-child(3) {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            grid-column: span 2;
+        }
+
+        .gallery-item:nth-child(4) {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .gallery-item:nth-child(5) {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .gallery-item:nth-child(6) {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            grid-column: span 2;
+        }
+
+        .gallery-item:nth-child(7) {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+        }
+
+        .gallery-item:nth-child(8) {
+            background: linear-gradient(135deg, #16a085, #1abc9c);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(0,0,0,0.7));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: end;
+            padding: 1.5rem;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .gallery-info {
+            color: white;
+        }
+
+        .gallery-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .gallery-info p {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Tools Section */
+        .tools {
+            padding: 8rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .tool-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1.5rem;
+            background: var(--accent-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .tool-card h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .tool-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: rgba(255, 107, 74, 0.1);
+            color: var(--accent-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-brand h4 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border-color);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                text-align: center;
+            }
+
+            .prompt-demo-grid {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .workflow-steps {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.5rem;
+            }
+
+            .workflow-step {
+                padding: 1.5rem;
+            }
+
+            .step-header {
+                margin-bottom: 1rem;
+            }
+
+            .step-number {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            .step-icon {
+                font-size: 1.5rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 0 4rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .hero-visual {
+                grid-template-columns: 1fr;
+                height: 300px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .section-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .gallery-item:nth-child(3),
+            .gallery-item:nth-child(6) {
+                grid-column: span 1;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .before-after {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .result-arrow {
+                transform: rotate(90deg);
+                font-size: 1.5rem;
+            }
+
+            .ai-process {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .process-step {
+                flex-direction: row;
+                justify-content: center;
+                padding: 0.5rem;
+            }
+
+            .editor-showcase-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .editor-showcase {
+                padding: 4rem 0;
+            }
+
+            .editor-content h2 {
+                font-size: 2rem;
+            }
+
+            .interface-mockup {
+                max-width: 100%;
+            }
+
+            .control-item {
+                grid-template-columns: 70px 1fr 40px;
+                gap: 0.75rem;
+            }
+
+            .control-label {
+                font-size: 0.8rem;
+            }
+
+            .workflow-steps {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .workflow-step {
+                padding: 1.5rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .footer-links {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo">ColorGrade</div>
+            <ul class="nav-links">
+                <li><a href="features.html">Features</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="tools.html">Tools</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+            </ul>
+            <div class="nav-controls">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <a href="#" class="cta-button">Get Started</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-grid">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span>🤖</span>
+                        AI-Powered Creative Assistant
+                    </div>
+                    <h1>The <span class="highlight">AI Editing Assistant</span> That Gets You</h1>
+                    <p>Transform your content with one prompt. Whether you're cutting footage or reinventing a self-portrait, our assistant brings your creative vision to life — with memory, style, and speed.</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn-primary">
+                            <span>✨</span>
+                            Try It Now
+                        </a>
+                        <a href="#" class="btn-secondary">
+                            <span>🎬</span>
+                            See Real Edits
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-image"></div>
+                    <div class="hero-image"></div>
+                    <div class="hero-image"></div>
+                    <div class="hero-image"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Visual Prompt Demo Section -->
+    <section class="prompt-demo">
+        <div class="container">
+            <div class="prompt-demo-grid">
+                <div class="prompt-input-area">
+                    <div class="demo-header">
+                        <h3>Feel familiar?</h3>
+                        <p>Like the best tools you know, but with AI superpowers</p>
+                    </div>
+                    <div class="prompt-interface">
+                        <div class="prompt-box">
+                            <div class="prompt-header">
+                                <span class="prompt-icon">🎯</span>
+                                <span>Describe your vision</span>
+                            </div>
+                            <div class="prompt-input">
+                                <span class="typing-text" id="typing-demo"></span>
+                                <span class="cursor-blink">|</span>
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-btn">📸 Make cinematic</button>
+                            <button class="quick-btn">🌃 Add neon Tokyo vibes</button>
+                            <button class="quick-btn">⚡ Speed up transitions</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="prompt-result-area">
+                    <div class="result-preview">
+                        <div class="before-after">
+                            <div class="result-item before">
+                                <div class="result-label">Before</div>
+                                <div class="result-image basic"></div>
+                            </div>
+                            <div class="result-arrow">→</div>
+                            <div class="result-item after">
+                                <div class="result-label">After AI Edit</div>
+                                <div class="result-image enhanced"></div>
+                            </div>
+                        </div>
+                        <div class="ai-process">
+                            <div class="process-step active">
+                                <span class="step-icon">🧠</span>
+                                <span>AI analyzing...</span>
+                            </div>
+                            <div class="process-step">
+                                <span class="step-icon">🎨</span>
+                                <span>Applying style...</span>
+                            </div>
+                            <div class="process-step">
+                                <span class="step-icon">✨</span>
+                                <span>Perfect!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Editor Showcase Section -->
+    <section class="editor-showcase">
+        <div class="container">
+            <div class="editor-showcase-grid">
+                <div class="editor-content">
+                    <div class="section-badge">Professional Editor</div>
+                    <h2>Or dive deep with professional controls</h2>
+                    <p>Start with AI, then fine-tune everything. Professional color wheels, curves, and adjustments give you pixel-perfect control over every aspect of your image.</p>
+                    <div class="editor-features">
+                        <div class="editor-feature">
+                            <span class="feature-icon">🎚️</span>
+                            <div>
+                                <h4>Precision Controls</h4>
+                                <p>Exposure, contrast, highlights, shadows - all with professional precision</p>
+                            </div>
+                        </div>
+                        <div class="editor-feature">
+                            <span class="feature-icon">🌈</span>
+                            <div>
+                                <h4>Color Science</h4>
+                                <p>Temperature, vibrance, saturation with cinema-grade color science</p>
+                            </div>
+                        </div>
+                        <div class="editor-feature">
+                            <span class="feature-icon">🎯</span>
+                            <div>
+                                <h4>AI-Assisted Editing</h4>
+                                <p>Get AI suggestions while you edit, or take full manual control</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="editor-cta">
+                        <a href="#" class="btn-secondary">
+                            <span>🎨</span>
+                            Try the Editor
+                        </a>
+                    </div>
+                </div>
+                <div class="editor-interface">
+                    <div class="interface-mockup">
+                        <div class="interface-header">
+                            <div class="interface-tabs">
+                                <div class="tab active">Controls</div>
+                                <div class="tab">AI Prompt</div>
+                                <div class="tab">Export</div>
+                            </div>
+                        </div>
+                        <div class="interface-body">
+                            <div class="control-section">
+                                <h4>Color Adjustments</h4>
+                                <div class="control-group">
+                                    <div class="control-item">
+                                        <span class="control-label">Exposure</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 60%"></div>
+                                        </div>
+                                        <span class="control-value">+0.8</span>
+                                    </div>
+                                    <div class="control-item">
+                                        <span class="control-label">Contrast</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 75%"></div>
+                                        </div>
+                                        <span class="control-value">+25</span>
+                                    </div>
+                                    <div class="control-item">
+                                        <span class="control-label">Highlights</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 35%"></div>
+                                        </div>
+                                        <span class="control-value">-15</span>
+                                    </div>
+                                    <div class="control-item">
+                                        <span class="control-label">Shadows</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 65%"></div>
+                                        </div>
+                                        <span class="control-value">+10</span>
+                                    </div>
+                                    <div class="control-item">
+                                        <span class="control-label">Saturation</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 70%"></div>
+                                        </div>
+                                        <span class="control-value">+20</span>
+                                    </div>
+                                    <div class="control-item">
+                                        <span class="control-label">Temperature</span>
+                                        <div class="control-slider">
+                                            <div class="slider-track"></div>
+                                            <div class="slider-thumb" style="left: 55%"></div>
+                                        </div>
+                                        <span class="control-value">+5</span>
+                                    </div>
+                                </div>
+                                <div class="ai-assist">
+                                    <span class="ai-icon">🤖</span>
+                                    <span>AI suggests: Try warming the highlights</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Benefits Section -->
+    <section class="benefits">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Why ColorGrade AI</div>
+                <h2 class="section-title">One assistant. Infinite possibilities.</h2>
+                <p class="section-subtitle">Combining the best of professional editing power, AI assistance, and visual excellence</p>
+            </div>
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🧠</div>
+                    <h3>Understands your style</h3>
+                    <p>Learns how you edit and grows with you. Your personal creative DNA, remembered forever.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">Memory Engine</span>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🪄</div>
+                    <h3>Visual prompt magic</h3>
+                    <p>Upload a photo, say "Make me look like I just bought a Porsche" — done. No Photoshop needed.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">One-Click Transform</span>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎯</div>
+                    <h3>Smart editing suggestions</h3>
+                    <p>Better pacing, cuts, transitions, and tones. AI that thinks like a pro editor.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">AI Director</span>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">⚡</div>
+                    <h3>One-click creativity</h3>
+                    <p>Generate edits, overlays, captions, and visuals instantly. Speed of thought, quality of craft.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">Instant Results</span>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💾</div>
+                    <h3>Integrated memory</h3>
+                    <p>Your tone, format, and vibe are remembered across sessions. Pick up where you left off.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">Personal Profile</span>
+                    </div>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎬</div>
+                    <h3>Complete creative suite</h3>
+                    <p>Built-in editor with professional tools, or export to any software. Never feel locked in.</p>
+                    <div class="benefit-feature">
+                        <span class="feature-tag">Full Control</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">How It Works</div>
+                <h2 class="section-title">Four steps to perfect content</h2>
+                <p class="section-subtitle">Unlike other AI tools that just give you a final result, we let you perfect every detail before export.</p>
+            </div>
+
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <div class="step-header">
+                        <div class="step-number">01</div>
+                        <div class="step-icon">📤</div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Upload content</h3>
+                        <p>Drag and drop photos, videos, or sketches. Any format, any size.</p>
+                        <div class="step-visual">
+                            <div class="upload-demo">
+                                <div class="upload-box">
+                                    <span class="upload-icon">📁</span>
+                                    <p>Drop files here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-header">
+                        <div class="step-number">02</div>
+                        <div class="step-icon">💬</div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Describe your vision</h3>
+                        <p>Tell us what you want in natural language. Our AI understands creative intent.</p>
+                        <div class="step-visual">
+                            <div class="prompt-examples">
+                                <div class="example-prompt">"Make this cinematic"</div>
+                                <div class="example-prompt">"Add golden hour glow"</div>
+                                <div class="example-prompt">"Tokyo neon vibes"</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-header">
+                        <div class="step-number">03</div>
+                        <div class="step-icon">🎨</div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Customize everything</h3>
+                        <p>Here's the difference: Fine-tune with professional controls. Adjust exposure, colors, mood - make it truly yours.</p>
+                        <div class="step-visual">
+                            <div class="customize-demo">
+                                <div class="control-preview">
+                                    <div class="control-item-mini">
+                                        <span>Exposure</span>
+                                        <div class="mini-slider"></div>
+                                    </div>
+                                    <div class="control-item-mini">
+                                        <span>Contrast</span>
+                                        <div class="mini-slider"></div>
+                                    </div>
+                                    <div class="control-item-mini">
+                                        <span>Saturation</span>
+                                        <div class="mini-slider"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="step-header">
+                        <div class="step-number">04</div>
+                        <div class="step-icon">🚀</div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Export anywhere</h3>
+                        <p>Export to any platform or software. Your choice, your workflow, your creative freedom.</p>
+                        <div class="step-visual">
+                            <div class="results-demo">
+                                <div class="result-formats">
+                                    <div class="format-item">MP4</div>
+                                    <div class="format-item">LUT</div>
+                                    <div class="format-item">PNG</div>
+                                    <div class="format-item">PSD</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery" id="gallery">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Gallery</div>
+                <h2 class="section-title">This is why 200,000+ photographers, filmmakers and colorists push their creativity with Lex.ai</h2>
+                <p class="section-subtitle">Love working with Lex.ai? Show us your best work and get your images featured on our website.</p>
+            </div>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Cinematic Portrait</h4>
+                            <p>Warm tones & soft shadows</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Ocean Blues</h4>
+                            <p>Cool, mysterious depths</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Purple Haze</h4>
+                            <p>Dreamy, ethereal vibes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Forest Green</h4>
+                            <p>Natural, organic feel</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Golden Hour</h4>
+                            <p>Warm, inviting light</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Moody Red</h4>
+                            <p>Intense, dramatic tones</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Urban Gray</h4>
+                            <p>Modern, sophisticated look</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-overlay">
+                        <div class="gallery-info">
+                            <h4>Teal Dreams</h4>
+                            <p>Fresh, contemporary style</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="tools" id="tools">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">Professional Tools</div>
+                <h2 class="section-title">Edit directly or export anywhere.</h2>
+                <p class="section-subtitle">Use our built-in professional editor for complete control, or export to any software. ColorGrade adapts to your workflow, not the other way around.</p>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-icon">🎥</div>
+                    <h3>DaVinci Resolve</h3>
+                    <p>Export your grades directly to DaVinci Resolve with our native integration. Seamless workflow from Lex.ai to professional video editing.</p>
+                    <div class="tool-badge">Integration</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🎨</div>
+                    <h3>Built-in Editor</h3>
+                    <p>Professional color wheels, curves, and LUTs right in the app. Edit everything without leaving ColorGrade.</p>
+                    <div class="tool-badge">Core Feature</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🌈</div>
+                    <h3>Halation</h3>
+                    <p>Authentic film halation effects that recreate the organic glow and bloom of analog film. Perfect for that vintage aesthetic.</p>
+                    <div class="tool-badge">Film Emulation</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">📈</div>
+                    <h3>Advanced Controls</h3>
+                    <p>Precision color wheels, curves, and professional grading tools. Everything you need for pixel-perfect control.</p>
+                    <div class="tool-badge">Pro Tools</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🎬</div>
+                    <h3>Filmic HDL</h3>
+                    <p>Extended dynamic range processing for extreme color stability. Handle the most challenging lighting conditions with ease.</p>
+                    <div class="tool-badge">Advanced</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">📦</div>
+                    <h3>Film Stocks</h3>
+                    <p>Access the world's best film emulations at your fingertips. From classic Kodak to modern digital looks.</p>
+                    <div class="tool-badge">Library</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">🔄</div>
+                    <h3>Workflow Freedom</h3>
+                    <p>Start with AI, refine in our editor, then export to any software. Or just stay in ColorGrade - your choice.</p>
+                    <div class="tool-badge">Flexibility</div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-icon">⚙️</div>
+                    <h3>Export Formats</h3>
+                    <p>3D LUTs, project files, or finished media. Export to Resolve, Premiere, Final Cut, or anywhere else.</p>
+                    <div class="tool-badge">Universal</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Try It Free — Describe your vision. Watch it become real.</h2>
+                <p>Join thousands of creators who've transformed their content with AI. No credit card required.</p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn-primary large">
+                        <span>🚀</span>
+                        Try It Now
+                    </a>
+                    <a href="#" class="btn-secondary large">
+                        <span>🎬</span>
+                        See Real Edits
+                    </a>
+                </div>
+                <div class="cta-features">
+                    <div class="cta-feature">
+                        <span class="feature-icon">✅</span>
+                        <span>Free trial</span>
+                    </div>
+                    <div class="cta-feature">
+                        <span class="feature-icon">⚡</span>
+                        <span>Instant results</span>
+                    </div>
+                    <div class="cta-feature">
+                        <span class="feature-icon">🧠</span>
+                        <span>Learns your style</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h4>ColorGrade</h4>
+                    <p>The most powerful color grading software designed for photographers, filmmakers, and visual creators who demand excellence.</p>
+                    <div class="footer-social">
+                        <a href="#" title="Twitter">🐦</a>
+                        <a href="#" title="Instagram">📷</a>
+                        <a href="#" title="YouTube">📺</a>
+                        <a href="#" title="Discord">💬</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <a href="#">Features</a>
+                    <a href="#">Pricing</a>
+                    <a href="#">Download</a>
+                    <a href="#">System Requirements</a>
+                    <a href="#">What's New</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="#">Documentation</a>
+                    <a href="#">Tutorials</a>
+                    <a href="#">Community</a>
+                    <a href="#">Blog</a>
+                    <a href="#">Gallery</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Press</a>
+                    <a href="#">Contact</a>
+                    <a href="#">Support</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 ColorGrade. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme Management
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle');
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Initialize theme from localStorage or default to dark
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle');
+            
+            if (savedTheme) {
+                document.body.setAttribute('data-theme', savedTheme);
+                themeToggle.textContent = savedTheme === 'light' ? '☀️' : '🌙';
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '🌙';
+            }
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Header scroll effect with theme awareness
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            
+            if (window.scrollY > 100) {
+                header.style.background = isDark ? 'rgba(10, 10, 10, 0.98)' : 'rgba(255, 255, 255, 0.98)';
+                header.style.boxShadow = '0 4px 32px rgba(0, 0, 0, 0.2)';
+            } else {
+                header.style.background = isDark ? 'rgba(10, 10, 10, 0.95)' : 'rgba(255, 255, 255, 0.95)';
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start typing animation
+            setTimeout(typeText, 1000);
+            
+            // Start AI processing simulation
+            setTimeout(simulateAIProcessing, 2000);
+
+            // Animate benefit cards
+            document.querySelectorAll('.benefit-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = `opacity 0.8s ease ${index * 0.1}s, transform 0.8s ease ${index * 0.1}s`;
+                observer.observe(card);
+            });
+
+            // Animate workflow steps
+            document.querySelectorAll('.workflow-step').forEach((step, index) => {
+                step.style.opacity = '0';
+                step.style.transform = 'translateX(-30px)';
+                step.style.transition = `opacity 0.8s ease ${index * 0.3}s, transform 0.8s ease ${index * 0.3}s`;
+                observer.observe(step);
+            });
+
+            // Animate tool cards
+            document.querySelectorAll('.tool-card').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(card);
+            });
+
+            // Animate gallery items
+            document.querySelectorAll('.gallery-item').forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.9)';
+                item.style.transition = `opacity 0.5s ease ${index * 0.05}s, transform 0.5s ease ${index * 0.05}s`;
+                observer.observe(item);
+            });
+
+            // Animate prompt demo sections
+            const promptDemo = document.querySelector('.prompt-demo-grid');
+            if (promptDemo) {
+                promptDemo.style.opacity = '0';
+                promptDemo.style.transform = 'translateY(40px)';
+                promptDemo.style.transition = 'opacity 1s ease 0.5s, transform 1s ease 0.5s';
+                observer.observe(promptDemo);
+            }
+        });
+
+        // Enhanced gallery interactions
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.transform = 'scale(1.05)';
+                item.style.zIndex = '10';
+            });
+            
+            item.addEventListener('mouseleave', () => {
+                item.style.transform = 'scale(1)';
+                item.style.zIndex = '1';
+            });
+        });
+
+        // Typing animation for prompt demo
+        const typingTexts = [
+            "Put me in front of a neon Tokyo skyline in the rain",
+            "Make this look cinematic with moody lighting",
+            "Add golden hour glow and warm tones",
+            "Create a cyberpunk aesthetic with purple hues",
+            "Transform this into a vintage film look"
+        ];
+
+        let currentTextIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+        const typingElement = document.getElementById('typing-demo');
+
+        function typeText() {
+            if (!typingElement) return;
+
+            const currentText = typingTexts[currentTextIndex];
+            
+            if (isDeleting) {
+                typingElement.textContent = currentText.substring(0, currentCharIndex - 1);
+                currentCharIndex--;
+                
+                if (currentCharIndex === 0) {
+                    isDeleting = false;
+                    currentTextIndex = (currentTextIndex + 1) % typingTexts.length;
+                    setTimeout(typeText, 500);
+                    return;
+                }
+            } else {
+                typingElement.textContent = currentText.substring(0, currentCharIndex + 1);
+                currentCharIndex++;
+                
+                if (currentCharIndex === currentText.length) {
+                    isDeleting = true;
+                    setTimeout(typeText, 2000);
+                    return;
+                }
+            }
+            
+            setTimeout(typeText, isDeleting ? 50 : 100);
+        }
+
+        // Quick action buttons functionality
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Add visual feedback
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    btn.style.transform = 'translateY(-2px)';
+                }, 150);
+
+                // Simulate prompt insertion
+                const promptText = btn.textContent.substring(2); // Remove emoji
+                if (typingElement) {
+                    typingElement.textContent = promptText;
+                    // Restart typing animation after a delay
+                    setTimeout(() => {
+                        currentTextIndex = 0;
+                        currentCharIndex = 0;
+                        isDeleting = false;
+                        typeText();
+                    }, 3000);
+                }
+            });
+        });
+
+        // AI processing simulation
+        function simulateAIProcessing() {
+            const steps = document.querySelectorAll('.process-step');
+            
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    steps.forEach(s => s.classList.remove('active'));
+                    step.classList.add('active');
+                }, index * 1500);
+            });
+
+            // Restart the cycle
+            setTimeout(simulateAIProcessing, 6000);
+        }
+
+        // Benefit cards interaction
+        document.querySelectorAll('.benefit-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-12px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const heroImages = document.querySelectorAll('.hero-image');
+            
+            heroImages.forEach((image, index) => {
+                const speed = (index + 1) * 0.2;
+                image.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Add loading animation
+        window.addEventListener('load', () => {
+            document.body.style.opacity = '1';
+            document.body.style.transform = 'translateY(0)';
+        });
+
+        // Initialize with loading state
+        document.body.style.opacity = '0';
+        document.body.style.transform = 'translateY(20px)';
+        document.body.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+    </script>
+</body>
+</html> 
