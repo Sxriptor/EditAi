@@ -411,33 +411,82 @@
             transform: translateY(-3px);
         }
 
-        /* Responsive */
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .container {
-                padding: 0 1rem;
+                padding: 0 16px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
             }
 
             .nav-links {
                 display: none;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--bg-primary);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hero {
+                padding: 5rem 0 2.5rem;
             }
 
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2rem;
             }
 
             .features-grid {
                 grid-template-columns: 1fr;
+                gap: 1.2rem;
             }
 
-            .comparison-header,
-            .comparison-row {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                text-align: center;
+            .feature-card {
+                padding: 1.8rem;
             }
 
-            .comparison-header h4:first-child {
-                text-align: center;
+            .section-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 0.9rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.3rem;
+            }
+
+            .feature-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -446,7 +495,8 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <div class="logo">ColorGrade</div>
+            <a href="/" class="logo">ColorGrade</a>
+            <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="features.html" class="active">Features</a></li>
@@ -656,6 +706,20 @@
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.body.setAttribute('data-theme', savedTheme);
         document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
+                navLinks.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html> 

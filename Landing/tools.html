@@ -516,31 +516,110 @@
             transform: translateY(-3px);
         }
 
-        /* Responsive */
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* Mobile Responsiveness */
         @media (max-width: 768px) {
             .container {
-                padding: 0 1rem;
+                padding: 0 16px;
+            }
+
+            .mobile-menu-btn {
+                display: block;
             }
 
             .nav-links {
                 display: none;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--bg-primary);
+                flex-direction: column;
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .hero {
+                padding: 6rem 0 3rem;
             }
 
             .hero h1 {
                 font-size: 2.5rem;
             }
 
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .tools-section {
+                padding: 4rem 0;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+                margin-bottom: 3rem;
+            }
+
             .tools-grid {
                 grid-template-columns: 1fr;
+                gap: 1.5rem;
             }
 
-            .showcase-grid {
-                grid-template-columns: 1fr;
-                gap: 2rem;
+            .tool-card {
+                padding: 2rem;
             }
 
-            .showcase-stats {
-                grid-template-columns: repeat(2, 1fr);
+            .tools-nav {
+                gap: 0.75rem;
+                margin-bottom: 3rem;
+            }
+
+            .tool-nav-btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .tool-card {
+                padding: 1.5rem;
+            }
+
+            .tools-nav {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .tool-nav-btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -549,7 +628,8 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <div class="logo">ColorGrade</div>
+            <a href="/" class="logo">ColorGrade</a>
+            <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="features.html">Features</a></li>
@@ -817,6 +897,20 @@
                 document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             });
+        });
+
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
+                navLinks.classList.remove('active');
+            }
         });
     </script>
 </body>
