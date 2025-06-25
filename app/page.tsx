@@ -81,7 +81,7 @@ import {
   Disc,
   Gauge
 } from "lucide-react"
-import { StyleCustomizationAccordion } from '@/components/editor/StyleCustomizationAccordion'
+import StyleCustomizationAccordion from '@/components/editor/StyleCustomizationAccordion'
 import FileMetadataPanel from '@/components/editor/FileMetadataPanel'
 import LUTControls from '@/components/editor/LUTControls'
 import QuickActions from '@/components/editor/QuickActions'
@@ -1324,18 +1324,104 @@ export default function ColorGradeDashboard() {
     })
   }
 
-  const processFile = async (file: File, options?: { skipHeicConversion?: boolean }) => {
+  const processFile = async (file: File) => {
+    // Reset all UI states first
+    setIsExporting(false)
+    setShowDiagonalSplit(false)
+    setShowColorPalette(false)
+    setExtractedColors([])
+    setPrompt("")
+    setSelectedPreset(null)
+    setActiveImageView('after')
+    setProcessingProgress(0)
+    
+    // Clear any existing project context for standalone files
+    setCurrentProject(null)
+    setCurrentProjectFile(null)
+    setHasUnsavedChanges(false)
+    
+    // Reset color adjustments to defaults for new uploads
+    const defaultAdjustments = {
+      // Primary Color Controls
+      exposure: [0],
+      contrast: [0],
+      highlights: [0],
+      shadows: [0],
+      saturation: [0],
+      temperature: [0],
+      brightness: [0],
+      vibrance: [0],
+      clarity: [0],
+      hue: [0],
+      
+      // Advanced Professional Controls
+      gamma: [1.0],
+      lift: [0],
+      gain: [1.0],
+      offset: [0],
+      
+      // Color Wheels (Professional Grade)
+      shadowsHue: [0],
+      shadowsSat: [0],
+      shadowsLum: [0],
+      midtonesHue: [0],
+      midtonesSat: [0],
+      midtonesLum: [0],
+      highlightsHue: [0],
+      highlightsSat: [0],
+      highlightsLum: [0],
+      
+      // Film Emulation
+      filmGrain: [0],
+      vignette: [0],
+      chromaKey: [0],
+      
+      // Curves and Advanced Controls
+      highlightDetail: [0],
+      shadowDetail: [0],
+      colorBalance: [0],
+      splitToning: [0],
+      luminanceSmoothing: [0],
+      colorSmoothing: [0],
+      
+      // Color Grading Wheels (HSL values for visual wheels)
+      shadowsWheel: { h: 0, s: 0, l: 0 },
+      midtonesWheel: { h: 0, s: 0, l: 0 },
+      highlightsWheel: { h: 0, s: 0, l: 0 },
+      
+      // New color grading parameters
+      midtones: [0],
+      shadowsLum: [0],
+      midtonesLum: [0],
+      highlightsLum: [0],
+      hueChannels: { red: [0], green: [0], blue: [0] },
+      saturationChannels: { red: [0], green: [0], blue: [0] },
+      luminanceChannels: { red: [0], green: [0], blue: [0] },
+      bloom: [0],
+      halation: [0],
+      chromaticAberration: [0],
+      
+      // Advanced Film & Cinema
+      bleachBypass: [0],
+      orangeTeal: [0],
+      skinTone: [0],
+      skyReplacement: [0],
+      motionBlur: [0],
+    }
+    
+    setColorAdjustments(defaultAdjustments)
+
     if (!validateFile(file)) return
     
-    // Check if it's a HEIC file that needs conversion (unless skipped for project files)
-    const isHeic = !options?.skipHeicConversion && (
+    // Check if it's a HEIC file that needs conversion
+    const isHeic = (
       file.type === 'image/heic' || file.type === 'image/heif' || 
       file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
     )
     
     let processedFile = file
     
-    // Convert HEIC files to JPEG (unless conversion is skipped)
+    // Convert HEIC files to JPEG
     if (isHeic) {
       setIsConverting(true)
       try {
@@ -2025,6 +2111,40 @@ export default function ColorGradeDashboard() {
     }, 50) // 50ms debounce delay for faster response
   }, [colorAdjustments, debouncedApplyAdjustments, addToUndoStack])
 
+  // Special handler for bulk style imports - sets all adjustments at once and applies to image
+  const handleBulkStyleImport = useCallback(async (adjustments: any) => {
+    // Add current state to undo stack before making changes
+    addToUndoStack(colorAdjustments)
+    
+    // Merge imported adjustments with current ones
+    const newAdjustments = {
+      ...colorAdjustments,
+      ...adjustments
+    }
+    
+    setColorAdjustments(newAdjustments)
+    setHasUnsavedChanges(true)
+    
+    // Clear any existing timeout
+    if (adjustmentTimeoutRef.current) {
+      clearTimeout(adjustmentTimeoutRef.current)
+    }
+    
+    // Apply adjustments to image immediately (no debounce needed for bulk imports)
+    if (originalImageData && mediaType === 'image') {
+      setIsAdjusting(true)
+      try {
+        const processedImage = await applyColorAdjustments(originalImageData, newAdjustments)
+        setProcessedImageData(processedImage)
+        setMediaUrl(processedImage)
+      } catch (error) {
+        console.error('Failed to apply imported style adjustments:', error)
+      } finally {
+        setIsAdjusting(false)
+      }
+    }
+  }, [colorAdjustments, originalImageData, mediaType, applyColorAdjustments, addToUndoStack])
+
   const handleExport = async () => {
     if (!mediaUrl) return
     
@@ -2220,11 +2340,11 @@ export default function ColorGradeDashboard() {
     const resetAdjustments = {
       // Primary Color Controls
       exposure: [0],
-      contrast: [25],
-      highlights: [-15],
-      shadows: [10],
-      saturation: [20],
-      temperature: [5],
+      contrast: [0],
+      highlights: [0],
+      shadows: [0],
+      saturation: [0],
+      temperature: [0],
       brightness: [0],
       vibrance: [0],
       clarity: [0],
@@ -2909,8 +3029,8 @@ export default function ColorGradeDashboard() {
       
       // Skip HEIC conversion entirely for project files - they're already browser-readable
       
-      // Process through the same pipeline as regular uploads, but skip HEIC conversion
-      await processFile(downloadedFile, { skipHeicConversion: true })
+      // Process through the same pipeline as regular uploads
+      await processFile(downloadedFile)
       
       // Set up project-specific data after processing
       setCurrentProjectFile(file)
@@ -3906,6 +4026,7 @@ export default function ColorGradeDashboard() {
             handleExport={handleExport}
             colorAdjustments={colorAdjustments}
             handleColorAdjustment={handleColorAdjustment}
+            handleBulkStyleImport={handleBulkStyleImport}
             handleColorWheelChange={handleColorWheelChange}
             handleFileUpload={handleFileUpload}
             // AI Prompt functionality

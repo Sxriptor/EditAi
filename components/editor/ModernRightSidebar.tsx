@@ -36,6 +36,8 @@ import ColorWheel from './tools/ColorWheel';
 import ToneCurve from './tools/ToneCurve';
 import AIPromptSection from './AIPromptSection';
 import { ImportStyleButton } from './ImportStyleButton';
+import ChannelMixer from './tools/ChannelMixer';
+import EffectsPanel from './tools/EffectsPanel';
 
 interface ModernRightSidebarProps {
   hasMedia: boolean;
@@ -43,6 +45,7 @@ interface ModernRightSidebarProps {
   handleExport: () => void;
   colorAdjustments: any;
   handleColorAdjustment: (key: string, value: any) => void;
+  handleBulkStyleImport?: (adjustments: any) => void;
   handleColorWheelChange: (wheelType: 'shadowsWheel' | 'midtonesWheel' | 'highlightsWheel', newValue: { h: number, s: number, l: number }) => void;
   handleFileUpload: () => void;
   // AI Prompt functionality
@@ -76,12 +79,20 @@ interface ModernRightSidebarProps {
   onSaveStyle?: () => void;
 }
 
+// Add this helper function at the top level
+const initializeChannelValues = () => ({
+  red: [0],
+  green: [0],
+  blue: [0]
+});
+
 export default function ModernRightSidebar({
   hasMedia,
   // mediaType,
   handleExport,
   colorAdjustments,
   handleColorAdjustment,
+  handleBulkStyleImport,
   handleColorWheelChange,
   handleFileUpload,
   // AI Prompt functionality
@@ -152,170 +163,156 @@ export default function ModernRightSidebar({
       type: 'histogram' as const
     },
     {
-      id: 'exposure',
-      label: 'Exposure',
+      id: 'tone',
+      label: 'Tone',
       icon: Sun,
       color: 'text-yellow-400',
-      type: 'slider' as const,
-      key: 'exposure',
-      min: -200,
-      max: 200,
-      step: 1
+      type: 'group' as const,
+      controls: [
+        {
+          id: 'exposure',
+          label: 'Exposure',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'contrast',
+          label: 'Contrast',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'shadows',
+          label: 'Shadows',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'midtones',
+          label: 'Midtones',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'highlights',
+          label: 'Highlights',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'gamma',
+          label: 'Gamma',
+          type: 'slider' as const,
+          min: 0.1,
+          max: 3.0,
+          step: 0.1
+        }
+      ]
     },
     {
-      id: 'exposureCurve',
-      label: 'Exposure Curve',
-      icon: Sun,
-      color: 'text-yellow-400',
-      type: 'curve' as const
+      id: 'color',
+      label: 'Color',
+      icon: Droplets,
+      color: 'text-pink-400',
+      type: 'group' as const,
+      controls: [
+        {
+          id: 'saturation',
+          label: 'Saturation',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'temperature',
+          label: 'Temperature',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'tint',
+          label: 'Tint',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'vibrance',
+          label: 'Vibrance',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        }
+      ]
     },
     {
-      id: 'contrast',
-      label: 'Contrast',
-      icon: Contrast,
+      id: 'colorWheels',
+      label: '3-Way Color',
+      icon: Target,
       color: 'text-purple-400',
-      type: 'slider' as const,
-      key: 'contrast',
-      min: -200,
-      max: 200,
-      step: 1
+      type: 'colorWheels' as const
     },
     {
-      id: 'contrastCurve',
-      label: 'Contrast Curve',
-      icon: Contrast,
-      color: 'text-purple-400',
-      type: 'curve' as const
+      id: 'channelMixer',
+      label: 'Channel Mixer',
+      icon: Sliders,
+      color: 'text-blue-400',
+      type: 'channelMixer' as const
     },
     {
-      id: 'highlights',
-      label: 'Highlights',
+      id: 'creative',
+      label: 'Creative',
       icon: Sparkles,
       color: 'text-orange-400',
-      type: 'slider' as const,
-      key: 'highlights',
-      min: -200,
-      max: 200,
-      step: 1
+      type: 'group' as const,
+      controls: [
+        {
+          id: 'clarity',
+          label: 'Clarity',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'filmGrain',
+          label: 'Film Grain',
+          type: 'slider' as const,
+          min: 0,
+          max: 100,
+          step: 1
+        },
+        {
+          id: 'vignette',
+          label: 'Vignette',
+          type: 'slider' as const,
+          min: -100,
+          max: 100,
+          step: 1
+        }
+      ]
     },
     {
-      id: 'shadows',
-      label: 'Shadows',
-      icon: CircleDot,
+      id: 'effects',
+      label: 'Effects',
+      icon: Film,
       color: 'text-indigo-400',
-      type: 'slider' as const,
-      key: 'shadows',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'hue',
-      label: 'Hue',
-      icon: Palette,
-      color: 'text-pink-400',
-      type: 'slider' as const,
-      key: 'hue',
-      min: -180,
-      max: 180,
-      step: 1
-    },
-    {
-      id: 'gamma',
-      label: 'Gamma',
-      icon: Sliders,
-      color: 'text-orange-400',
-      type: 'slider' as const,
-      key: 'gamma',
-      min: 0.1,
-      max: 2.0,
-      step: 0.1
-    },
-    {
-      id: 'brightness',
-      label: 'Brightness',
-      icon: Sun,
-      color: 'text-yellow-300',
-      type: 'slider' as const,
-      key: 'brightness',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'saturation',
-      label: 'Saturation',
-      icon: Droplets,
-      color: 'text-pink-400',
-      type: 'slider' as const,
-      key: 'saturation',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'saturationCurve',
-      label: 'Saturation Curve',
-      icon: Droplets,
-      color: 'text-pink-400',
-      type: 'curve' as const
-    },
-    {
-      id: 'temperature',
-      label: 'Temperature',
-      icon: Zap,
-      color: 'text-cyan-400',
-      type: 'slider' as const,
-      key: 'temperature',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'vibrance',
-      label: 'Vibrance',
-      icon: Layers,
-      color: 'text-emerald-400',
-      type: 'slider' as const,
-      key: 'vibrance',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'clarity',
-      label: 'Clarity',
-      icon: Target,
-      color: 'text-blue-300',
-      type: 'slider' as const,
-      key: 'clarity',
-      min: -200,
-      max: 200,
-      step: 1
-    },
-    {
-      id: 'shadowsWheel',
-      label: 'Shadow Highlight',
-      icon: Target,
-      color: 'text-gray-400',
-      type: 'colorwheel' as const,
-      wheelType: 'shadowsWheel' as const
-    },
-    {
-      id: 'midtonesWheel',
-      label: 'Midtones',
-      icon: Target,
-      color: 'text-gray-300',
-      type: 'colorwheel' as const,
-      wheelType: 'midtonesWheel' as const
-    },
-    {
-      id: 'highlightsWheel',
-      label: 'Highlights',
-      icon: Target,
-      color: 'text-white',
-      type: 'colorwheel' as const,
-      wheelType: 'highlightsWheel' as const
+      type: 'effects' as const
     }
   ];
 
@@ -567,55 +564,101 @@ export default function ModernRightSidebar({
           </div>
         );
       
-             case 'slider':
-         return (
-           <div className="px-4 pb-4">
-             <ModernSlider
-               label={item.label}
-               value={Array.isArray(colorAdjustments[item.key]) ? colorAdjustments[item.key][0] : (colorAdjustments[item.key] || 0)}
-               onChange={(value) => handleColorAdjustment(item.key, [value])}
-               min={item.min}
-               max={item.max}
-               step={item.step}
-               disabled={!hasMedia}
-             />
-           </div>
-         );
+      case 'slider':
+        return (
+          <div className="px-4 pb-4">
+            <ModernSlider
+              label={item.label}
+              value={Array.isArray(colorAdjustments[item.id]) ? colorAdjustments[item.id][0] : (colorAdjustments[item.id] || 0)}
+              onChange={(value) => handleColorAdjustment(item.id, [value])}
+              min={item.min}
+              max={item.max}
+              step={item.step}
+              disabled={!hasMedia}
+            />
+          </div>
+        );
       
-             case 'curve':
-         return (
-           <div className="px-4 pb-4">
-             <ToneCurve
-               width={280}
-               height={180}
-               title={item.label}
-               value={colorAdjustments[`${item.id}Points`] || [
-                 { x: 0, y: 0 },
-                 { x: 0.25, y: 0.25 },
-                 { x: 0.5, y: 0.5 },
-                 { x: 0.75, y: 0.75 },
-                 { x: 1, y: 1 }
-               ]}
-               onChange={(points) => {
-                 handleColorAdjustment(`${item.id}Points`, points);
-               }}
-               disabled={!hasMedia}
-             />
-           </div>
-         );
+      case 'group':
+        return (
+          <div className="px-4 pb-4 space-y-4">
+            {item.controls.map((control: any) => (
+              <ModernSlider
+                key={control.id}
+                label={control.label}
+                value={Array.isArray(colorAdjustments[control.id]) ? colorAdjustments[control.id][0] : (colorAdjustments[control.id] || 0)}
+                onChange={(value) => handleColorAdjustment(control.id, [value])}
+                min={control.min}
+                max={control.max}
+                step={control.step}
+                disabled={!hasMedia}
+              />
+            ))}
+          </div>
+        );
       
-             case 'colorwheel':
-         return (
-           <div className="px-4 pb-4">
-             <ColorWheel
-               title={item.label}
-               value={colorAdjustments[item.wheelType] || { h: 0, s: 0, l: 0 }}
-               onChange={(value) => handleColorWheelChange(item.wheelType, value)}
-               size={120}
-               disabled={!hasMedia}
-             />
-           </div>
-         );
+      case 'colorWheels':
+        return (
+          <div className="px-4 pb-4">
+            <div className="space-y-6">
+              <ColorWheel
+                title="Shadows"
+                value={colorAdjustments.shadowsWheel || { h: 0, s: 0, l: 0 }}
+                onChange={(value) => handleColorWheelChange('shadowsWheel', value)}
+                size={120}
+                disabled={!hasMedia}
+              />
+              <ColorWheel
+                title="Midtones"
+                value={colorAdjustments.midtonesWheel || { h: 0, s: 0, l: 0 }}
+                onChange={(value) => handleColorWheelChange('midtonesWheel', value)}
+                size={120}
+                disabled={!hasMedia}
+              />
+              <ColorWheel
+                title="Highlights"
+                value={colorAdjustments.highlightsWheel || { h: 0, s: 0, l: 0 }}
+                onChange={(value) => handleColorWheelChange('highlightsWheel', value)}
+                size={120}
+                disabled={!hasMedia}
+              />
+            </div>
+          </div>
+        );
+      
+      case 'channelMixer':
+        return (
+          <div className="px-4 pb-4">
+            <ChannelMixer
+              hueChannels={colorAdjustments.hueChannels || initializeChannelValues()}
+              saturationChannels={colorAdjustments.saturationChannels || initializeChannelValues()}
+              luminanceChannels={colorAdjustments.luminanceChannels || initializeChannelValues()}
+              onChannelChange={(type, channel, value) => {
+                const newChannels = {
+                  ...colorAdjustments[type] || initializeChannelValues(),
+                  [channel]: value
+                };
+                handleColorAdjustment(type, newChannels);
+              }}
+              disabled={!hasMedia}
+            />
+          </div>
+        );
+      
+      case 'effects':
+        return (
+          <div className="px-4 pb-4">
+            <EffectsPanel
+              bloom={colorAdjustments.bloom || [0]}
+              halation={colorAdjustments.halation || [0]}
+              chromaticAberration={colorAdjustments.chromaticAberration || [0]}
+              onEffectChange={(effect, value) => {
+                handleColorAdjustment(effect, value);
+              }}
+              disabled={!hasMedia}
+            />
+          </div>
+        );
       
       default:
         return null;
@@ -717,10 +760,18 @@ export default function ModernRightSidebar({
 
               {hasMedia && (
                 <ImportStyleButton
-                  onImport={(adjustments: Record<string, number[]>) => {
-                    Object.entries(adjustments).forEach(([key, value]) => {
-                      handleColorAdjustment(key, value);
-                    });
+                  onImport={(adjustments) => {
+                    // Use bulk import handler if available, otherwise fall back to individual adjustments
+                    if (handleBulkStyleImport) {
+                      handleBulkStyleImport(adjustments);
+                    } else {
+                      // Fallback: Handle each adjustment type individually
+                      Object.entries(adjustments).forEach(([key, value]) => {
+                        if (value !== undefined) {
+                          handleColorAdjustment(key, value);
+                        }
+                      });
+                    }
                   }}
                 />
               )}

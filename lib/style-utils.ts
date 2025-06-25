@@ -7,17 +7,21 @@ import { StyleAdjustments, ImportStyleValidation, ColorChannelAdjustments } from
  */
 export function validateImportedStyle(importedJson: Record<string, any>): ImportStyleValidation {
   const supportedFields = new Set([
+    // Basic adjustments
     'exposure', 'contrast', 'saturation', 'temperature', 'tint', 'gamma',
     'lift', 'gain', 'offset',
     'shadows', 'midtones', 'highlights',
-    'shadowsHue', 'midtonesHue', 'highlightsHue',
-    'shadowsLum', 'midtonesLum', 'highlightsLum',
     'vibrance', 'clarity', 'filmGrain', 'vignette',
     'bloom', 'halation', 'chromaticAberration',
-    'hue', 'saturationChannels', 'luminanceChannels'
+    // Color wheels
+    'shadowsWheel', 'midtonesWheel', 'highlightsWheel',
+    'shadowsLum', 'midtonesLum', 'highlightsLum',
+    // Channel adjustments
+    'hueChannels', 'saturationChannels', 'luminanceChannels'
   ]);
 
-  const channelFields = new Set(['hue', 'saturationChannels', 'luminanceChannels']);
+  const channelFields = new Set(['hueChannels', 'saturationChannels', 'luminanceChannels']);
+  const colorWheelFields = new Set(['shadowsWheel', 'midtonesWheel', 'highlightsWheel']);
   const unsupportedFields: string[] = [];
   const adjustments: StyleAdjustments = {};
 
@@ -28,24 +32,39 @@ export function validateImportedStyle(importedJson: Record<string, any>): Import
       return;
     }
 
-    // Handle channel adjustments (hue, saturation, luminance)
+    // Handle channel adjustments (hueChannels, saturationChannels, luminanceChannels)
     if (channelFields.has(key)) {
       if (typeof value === 'object' && value !== null) {
         const channelValue = value as Partial<ColorChannelAdjustments>;
         const channels: ColorChannelAdjustments = {
-          red: Number(channelValue.red) || 0,
-          green: Number(channelValue.green) || 0,
-          blue: Number(channelValue.blue) || 0
+          red: Array.isArray(channelValue.red) ? channelValue.red : [Number(channelValue.red) || 0],
+          green: Array.isArray(channelValue.green) ? channelValue.green : [Number(channelValue.green) || 0],
+          blue: Array.isArray(channelValue.blue) ? channelValue.blue : [Number(channelValue.blue) || 0]
         };
-        adjustments[key as keyof Pick<StyleAdjustments, 'hue' | 'saturationChannels' | 'luminanceChannels'>] = channels;
+        adjustments[key as keyof StyleAdjustments] = channels;
       }
-    } 
-    // Handle numeric values
+    }
+    // Handle color wheels
+    else if (colorWheelFields.has(key)) {
+      if (typeof value === 'object' && value !== null) {
+        const wheelValue = value as { h?: number; s?: number; l?: number };
+        adjustments[key as keyof StyleAdjustments] = {
+          h: Number(wheelValue.h) || 0,
+          s: Number(wheelValue.s) || 0,
+          l: Number(wheelValue.l) || 0
+        };
+      }
+    }
+    // Handle numeric values (convert to array format)
     else if (typeof value === 'number' || typeof value === 'string') {
       const numValue = Number(value);
       if (!isNaN(numValue)) {
-        adjustments[key as keyof Omit<StyleAdjustments, 'hue' | 'saturationChannels' | 'luminanceChannels'>] = numValue;
+        adjustments[key as keyof StyleAdjustments] = [numValue];
       }
+    }
+    // Handle arrays (already in correct format)
+    else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'number') {
+      adjustments[key as keyof StyleAdjustments] = value;
     }
   });
 
@@ -59,17 +78,12 @@ export function validateImportedStyle(importedJson: Record<string, any>): Import
 /**
  * Transforms the adjustments into the format expected by the UI
  */
-export function transformAdjustmentsForUI(adjustments: StyleAdjustments): Record<string, number[]> {
-  const result: Record<string, number[]> = {};
+export function transformAdjustmentsForUI(adjustments: StyleAdjustments): Record<string, any> {
+  const result: Record<string, any> = {};
   
   Object.entries(adjustments).forEach(([key, value]) => {
-    // Skip channel adjustments as they're handled separately
-    if (typeof value === 'object') return;
-    
-    // Convert single numbers to array format expected by UI
-    if (typeof value === 'number') {
-      result[key] = [value];
-    }
+    // Pass through all values as-is since we now handle proper types
+    result[key] = value;
   });
   
   return result;
