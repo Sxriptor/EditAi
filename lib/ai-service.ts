@@ -5,6 +5,17 @@ import { supabase } from './supabase';
 // Initialize OpenAI client
 require('dotenv').config();           // <-- load .env into process.env
 
+// Add debugging for environment variables in production
+console.log('🔑 Environment check:');
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('ANTHROPIC_API_KEY exists:', !!process.env.ANTHROPIC_API_KEY);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
+if (!process.env.OPENAI_API_KEY) {
+  console.error('❌ OPENAI_API_KEY is missing!');
+  throw new Error('OPENAI_API_KEY environment variable is required');
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -12,6 +23,10 @@ const openai = new OpenAI({
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 }) : null;
+
+if (!anthropic) {
+  console.warn('⚠️ Anthropic client not configured (ANTHROPIC_API_KEY missing)');
+}
 
 // Types for our AI system
 export interface UserEditingPreferences {
@@ -80,15 +95,62 @@ export class AIEditingService {
     
     console.log('🤖 Processing AI prompt for user:', userId);
     console.log('🧠 Enhanced analysis enabled:', enhancedAnalysis);
+    console.log('🔧 Workflow mode:', workflowMode);
+    console.log('📝 Prompt length:', promptText.length);
+    
+    // Add a timeout wrapper to prevent deployment timeouts
+    const timeoutPromise = new Promise<AIResponse>((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Processing timeout - request took too long'));
+      }, 45000); // 45 second timeout for deployment environments
+    });
+
+    const processingPromise = this.processPromptInternal(
+      userId, promptText, mediaUrl, mediaType, projectId, 
+      workflowMode, selectedStyles, mainFocus, enhancedAnalysis
+    );
+
+    try {
+      return await Promise.race([processingPromise, timeoutPromise]);
+    } catch (error) {
+      console.error('❌ Error in processPrompt:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      return {
+        edit_summary: `I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        edit_steps: [],
+        style_trace: ['error'],
+        confidence_score: 0
+      };
+    }
+  }
+
+  private async processPromptInternal(
+    userId: string,
+    promptText: string,
+    mediaUrl?: string,
+    mediaType?: 'image' | 'video',
+    projectId?: string,
+    workflowMode?: 'color-grade' | 'image-repurpose',
+    selectedStyles?: string[],
+    mainFocus?: string[],
+    enhancedAnalysis?: boolean
+  ): Promise<AIResponse> {
     
     try {
+      console.log('🔄 Starting internal processing...');
+      
       // 1. AUTHENTICATE AND LOAD USER CONTEXT
+      console.log('📋 Loading user context...');
       const userPreferences = await this.loadUserContext(userId);
+      console.log('✅ User context loaded');
       
       // 2. CHECK WORKFLOW MODE AND IMAGE GENERATION REQUEST  
       const isImageGeneration = workflowMode === 'image-repurpose' || this.isImageGenerationRequest(promptText);
+      console.log('🎨 Is image generation:', isImageGeneration);
       
       if (isImageGeneration && (!mediaUrl || workflowMode === 'image-repurpose')) {
+        console.log('🖼️ Processing image generation...');
         // Generate new image from description (Image Repurpose mode)
         return await this.generateImageFromPrompt(
           userId, 
@@ -101,6 +163,7 @@ export class AIEditingService {
         );
       }
       
+      console.log('⚙️ Processing editing workflow...');
       // --- THIS IS THE CORRECTED EDITING WORKFLOW ---
       const response = await this.generateEditingResponse(
         userId,
@@ -111,16 +174,12 @@ export class AIEditingService {
         projectId
       );
       
+      console.log('✅ Processing completed successfully');
       return response;
       
     } catch (error) {
-      console.error('Error processing prompt:', error);
-      return {
-        edit_summary: 'I apologize, but I encountered an error processing your request.',
-        edit_steps: [],
-        style_trace: ['error'],
-        confidence_score: 0
-      };
+      console.error('❌ Error in processPromptInternal:', error);
+      throw error; // Re-throw to be caught by outer try-catch
     }
   }
 
