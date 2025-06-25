@@ -74,7 +74,7 @@ export interface EditStep {
  * Implements the complete backend guide functionality
  */
 export class AIEditingService {
-  private enhancementCache = new Map<string, string>();
+  private enhancementCache: Map<string, string> = new Map();
   private readonly MAX_CACHE_SIZE = 500; // Store last 500 enhancements
   
   /**
@@ -600,69 +600,201 @@ LUT_3D_SIZE ${lutSize}
     projectId?: string
   ): Promise<AIResponse> {
     const startTime = Date.now();
-
-      let mediaAnalysis = '';
-      if (mediaUrl && mediaType === 'image') {
-      mediaAnalysis = await this.analyzeImageWithGPT4Vision(mediaUrl, promptText);
-    }
-    
-    const promptType = 'command';
-
-    const systemPrompt = `You are an expert AI photo editing assistant. Your task is to translate a user's request into a precise JSON object of color adjustments.
-
-    RULES:
-    1.  Your output MUST be a valid JSON object.
-    2.  The keys of the JSON object must be one of the valid adjustment names provided below.
-    3.  The values must be a single number representing the desired setting.
-    4.  ONLY include the keys for the adjustments you want to change. Do not include keys with a value of 0.
-    5.  For a request like "make it black and white", the correct response is \`{ "saturation": -100 }\`.
-
-    VALID ADJUSTMENT KEYS:
-    - "exposure": (-100 to 100)
-    - "contrast": (0 to 100)
-    - "highlights": (-100 to 100)
-    - "shadows": (-100 to 100)
-    - "saturation": (-100 to 100)
-    - "vibrance": (-100 to 100)
-    - "temperature": (-100 to 100)
-    - "clarity": (0 to 100)
-    - "filmGrain": (0 to 100)
-    - "vignette": (0 to 100)
-
-    USER REQUEST: "${promptText}"
-
-    TECHNICAL IMAGE ANALYSIS:
-    ${mediaAnalysis || 'No technical analysis provided.'}
-
-    Based on the user request and the analysis, provide the JSON object of adjustments.`;
+    let strategy = 'basic';
 
     try {
-        const response = await this.createChatCompletionWithFallback({
-            model: 'gpt-4-turbo',
-            messages: [{ role: 'system', content: systemPrompt }],
-            temperature: 0.1,
-            response_format: { type: "json_object" },
+      // Validate required inputs
+      if (!promptText) throw new Error('promptText is required');
+
+      // Initialize mediaAnalysis as empty string
+      let mediaAnalysis: string = '';
+      
+      // Analyze image if provided
+      if (mediaUrl && mediaType === 'image') {
+        // Check cache first
+        const cachedAnalysis = this.enhancementCache.get(mediaUrl);
+        if (cachedAnalysis) {
+          mediaAnalysis = cachedAnalysis;
+          strategy = 'cache_hit';
+        } else {
+          try {
+            mediaAnalysis = await this.analyzeImageWithGPT4Vision(mediaUrl, promptText);
+            this.enhancementCache.set(mediaUrl, mediaAnalysis);
+            strategy = 'vision_enhanced';
+          } catch (error) {
+            console.error('Failed to analyze image:', error);
+            mediaAnalysis = 'Failed to analyze image due to an error.';
+            strategy = 'vision_failed';
+          }
+        }
+      }
+
+      // Classify user intent
+      const intentResponse = await this.createChatCompletionWithFallback({
+        model: 'gpt-4-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a photo editing intent classifier. Classify this request into one of these categories:
+            - technical: Technical adjustments like exposure, contrast
+            - creative: Artistic or mood-based changes like "make it cinematic"
+            - style: Specific style requests like "make it look vintage"
+            - correction: Fix specific issues like "fix the dark shadows"
+            
+            Respond with ONLY the category name, lowercase.`
+          },
+          {
+            role: 'user',
+            content: promptText
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 10
       });
 
-        const aiContent = response.choices[0]?.message.content || '{}';
+      const intent = intentResponse.choices[0]?.message.content?.trim() || 'technical';
+      strategy += '_' + intent;
+
+      // STEP 2: System prompt
+      const systemPrompt = `You are a professional AI colorist.
+
+You will receive:
+- A technical image analysis (lighting, color, exposure, tone)
+- A natural language grading request from a user
+- The user's intent classification: ${intent}
+
+Your job is to create a clean JSON object of color grading adjustments based on the image's actual properties and the user's creative intent.
+
+ONLY use the valid keys below. DO NOT guess or make up fields. Do not include fields with value 0.
+
+Return ONLY a JSON object. Do not include explanations or prose.
+
+Valid keys and ranges:
+{
+  "exposure": -100 to 100,
+  "contrast": -100 to 100,
+  "highlights": -100 to 100,
+  "shadows": -100 to 100,
+  "saturation": -100 to 100,
+  "temperature": -100 to 100,
+  "tint": -100 to 100,
+  "clarity": -100 to 100,
+  "vibrance": -100 to 100,
+  "gamma": 0.0 to 2.0,
+  "lift": 0.0 to 2.0,
+  "gain": 0.0 to 2.0,
+  "offset": 0.0 to 2.0,
+  "shadowsHue": 0 to 360,
+  "midtonesHue": 0 to 360,
+  "highlightsHue": 0 to 360,
+  "shadowsLum": -100 to 100,
+  "midtonesLum": -100 to 100,
+  "highlightsLum": -100 to 100,
+  "filmGrain": 0 to 100,
+  "vignette": 0 to 100
+}
+
+EXAMPLE OUTPUTS:
+
+For "make it black and white":
+{
+  "saturation": -100,
+  "contrast": 30,
+  "clarity": 20
+}
+
+For "make it warmer":
+{
+  "temperature": 30,
+  "tint": -5
+}
+
+For "fix dark shadows":
+{
+  "shadows": 40,
+  "lift": 1.2,
+  "shadowsLum": 30
+}`;
+
+      // Validate system prompt
+      if (!systemPrompt) throw new Error('systemPrompt is undefined');
+
+      // STEP 3: Completion with type-safe message construction
+      const userMessage = `IMAGE ANALYSIS:\n${mediaAnalysis || 'No image analysis'}\n\nUSER REQUEST:\n"${promptText}"`;
+
+      const response = await this.createChatCompletionWithFallback({
+        model: 'gpt-4-turbo',
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage }
+        ]
+      }) as OpenAI.Chat.Completions.ChatCompletion;
+
+      const content = response.choices[0]?.message?.content;
+      if (content === undefined) {
+        console.warn('⚠️ AI response.content was undefined. Falling back to "{}". Full response:', response);
+      }
+      const aiContent = content ?? '{}';
       const responseTime = Date.now() - startTime;
 
-      const structuredResponse = this.parseAIResponse(aiContent, promptType, userPreferences, mediaAnalysis);
-      
-      // TODO: Re-enable interaction logging without affecting main processing flow
-      // await this.logInteraction(userId, promptText, promptType, structuredResponse, responseTime, projectId, mediaUrl);
+      // STEP 4: JSON parse with enhanced description
+      const structuredResponse = this.parseAIResponse(
+        aiContent,
+        intent,
+        userPreferences, 
+        mediaAnalysis || 'No image analysis available',
+        'Values were derived dynamically from the image content and user\'s style request.'
+      );
 
-      return structuredResponse;
+      // STEP 7: Log the interaction
+      try {
+        await this.logInteraction(
+          userId,
+          promptText,
+          'command',
+          {
+            ...structuredResponse,
+            strategy,
+            visual_inference: mediaAnalysis
+          },
+          responseTime,
+          projectId,
+          mediaUrl
+        );
+      } catch (logError) {
+        console.error('Failed to log interaction:', logError);
+        // Don't fail the request if logging fails
+      }
+
+      return {
+        ...structuredResponse,
+        strategy,
+        visual_inference: mediaAnalysis
+      };
 
     } catch (error) {
-        console.error('Error generating AI editing response:', error);
+      console.error('Error generating AI editing response:', error);
+      // STEP 5: No-image fallback
       return {
-            edit_summary: `I encountered an error. As a fallback, try these settings for a ${userPreferences.editing_tone}, ${userPreferences.color_grading_style} look.`,
+        edit_summary: `I encountered an error. As a fallback, try these settings for a ${userPreferences.editing_tone}, ${userPreferences.color_grading_style} look.`,
         edit_steps: [
-                { action: 'adjust_contrast', parameters: { value: 15 }, description: `Increase contrast for a ${userPreferences.editing_tone} feel.`, order: 1 },
-                { action: 'adjust_temperature', parameters: { value: userPreferences.color_grading_style === 'warm' ? 10 : -10 }, description: `Adjust temperature for a ${userPreferences.color_grading_style} look.`, order: 2 }
+          { 
+            action: 'adjust_contrast',
+            parameters: { value: 15 },
+            description: `Increase contrast for a ${userPreferences.editing_tone} feel.`,
+            order: 1
+          },
+          {
+            action: 'adjust_temperature',
+            parameters: { value: userPreferences.color_grading_style === 'warm' ? 10 : -10 },
+            description: `Adjust temperature for a ${userPreferences.color_grading_style} look.`,
+            order: 2
+          }
         ],
-            style_trace: ['fallback_applied'],
+        style_trace: ['fallback_applied'],
+        strategy: 'error_fallback'
       };
     }
   }
@@ -674,7 +806,8 @@ LUT_3D_SIZE ${lutSize}
     content: string, 
     promptType: string, 
     preferences: UserEditingPreferences,
-    mediaAnalysis?: string
+    mediaAnalysis: string,
+    description: string
   ): AIResponse {
     try {
       const adjustments = JSON.parse(content);
@@ -686,15 +819,15 @@ LUT_3D_SIZE ${lutSize}
       const editSteps: EditStep[] = Object.entries(adjustments).map(([key, value], index) => ({
         action: `adjust_${key}`,
         parameters: { value: value as number },
-        description: `Set ${key} to ${value}`,
+        description: `${description} - Set ${key} to ${value}`,
         order: index + 1,
       }));
 
       const summary = `AI suggested the following changes: ${Object.entries(adjustments).map(([key, value]) => `${key} to ${value}`).join(', ')}.`;
 
-    return {
+      return {
         edit_summary: summary,
-      edit_steps: editSteps,
+        edit_steps: editSteps,
         style_trace: ['json_based_adjustments'],
       };
 
@@ -928,26 +1061,36 @@ Provide only the detailed analysis. Do not add any conversational text.`;
    * This is now the single source of truth for all vision analysis.
    */
   private async analyzeImageWithGPT4Vision(imageUrl: string, promptText: string): Promise<string> {
+    const defaultErrorMessage = 'Image analysis failed: An error occurred during vision analysis.';
+    
     try {
       const visionResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
-            {
-                role: 'user',
-                content: [
-                    { type: 'text', text: `You are an expert image analyst for a DALL-E 3 prompt engineer. Deconstruct this image into a technical description that can be used to generate a new image based on the user's prompt: "${promptText}". Focus on lighting, composition, color, and artistic style.` },
-                    { type: 'image_url', image_url: { url: imageUrl } }
-                ]
-            }
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: `You are an expert image analyst for a DALL-E 3 prompt engineer. Deconstruct this image into a technical description that can be used to generate a new image based on the user's prompt: "${promptText}". Focus on lighting, composition, color, and artistic style.` },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          }
         ],
         max_tokens: 500
       });
-      const analysis = visionResponse.choices[0]?.message.content || '';
+
+      // Explicitly check for undefined/null and handle it
+      const content = visionResponse.choices[0]?.message?.content;
+      if (typeof content !== 'string' || content.trim().length === 0) {
+        console.warn('⚠️ GPT-4 Vision returned empty or invalid analysis');
+        return 'Image analysis unavailable: GPT-4 Vision returned no content.';
+      }
+
       console.log('✅ GPT-4 Vision analysis complete.');
-      return analysis;
+      return content;
+
     } catch (error) {
       console.error('❌ GPT-4 Vision analysis failed:', error);
-      return 'Image analysis failed.';
+      return defaultErrorMessage;
     }
   }
 

@@ -404,15 +404,15 @@ const ChatHistoryOverlay = () => {
                 </div>
               )}
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setShowChatHistory(false)}
-              className="h-8 w-8 p-0 text-gray-400 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowChatHistory(false)}
+            className="h-8 w-8 p-0 text-gray-400 hover:text-white"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
 
           <ScrollArea className="flex-grow p-4">
             {selectedSessionId ? (
