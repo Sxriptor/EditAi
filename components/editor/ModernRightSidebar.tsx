@@ -35,6 +35,7 @@ import ModernSlider from './tools/ModernSlider';
 import ColorWheel from './tools/ColorWheel';
 import ToneCurve from './tools/ToneCurve';
 import AIPromptSection from './AIPromptSection';
+import { ImportStyleButton } from './ImportStyleButton';
 
 interface ModernRightSidebarProps {
   hasMedia: boolean;
@@ -702,19 +703,28 @@ export default function ModernRightSidebar({
               )}
             </div>
 
-            {/* Save Style Button */}
-            <div className="mt-2">
+            {/* Save/Import Style Buttons */}
+            <div className="mt-2 grid grid-cols-2 gap-2">
               <Button
                 onClick={onSaveStyle}
                 variant="outline"
-                className="w-full h-8 text-xs border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400"
+                className="h-8 text-xs border-purple-500/50 text-purple-300 hover:bg-purple-500/10 hover:border-purple-400"
                 disabled={!hasMedia}
               >
                 <Palette className="h-3 w-3 mr-1" />
                 Save Style
               </Button>
-            </div>
 
+              {hasMedia && (
+                <ImportStyleButton
+                  onImport={(adjustments: Record<string, number[]>) => {
+                    Object.entries(adjustments).forEach(([key, value]) => {
+                      handleColorAdjustment(key, value);
+                    });
+                  }}
+                />
+              )}
+            </div>
 
           </div>
         )}
