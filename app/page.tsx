@@ -129,9 +129,11 @@ interface LUTPreset {
 export default function ColorGradeDashboard() {
   const { user, session, loading, signOut } = useAuth()
   const { checkCanUseAI, setShowPaymentModal } = useSubscription()
-  const { saveAIInteraction } = useChatHistory()
 
   const { toast } = useToast()
+
+
+
   const [isLoadingPresets, setIsLoadingPresets] = useState(false)
   const isMobile = useIsMobile()
   const [showOriginal, setShowOriginal] = useState(false)
@@ -1789,29 +1791,49 @@ export default function ColorGradeDashboard() {
         // Set AI summary for UI display
         setAiSummary(aiResult.data.edit_summary)
 
-        // 💾 SAVE AI INTERACTION TO CHAT HISTORY
-        try {
-          await saveAIInteraction(
-            prompt, // User's original prompt
-            aiResult.data, // Full AI response
-            {
-              image_url: originalImageData || mediaUrl, // Image that was used
-              media_type: mediaType,
-              workflow_mode: workflowMode,
-              selected_styles: selectedPromptStyles,
-              main_focus: selectedMainFocus,
-              strategy: aiResult.data.strategy,
-              enhanced_prompt: aiResult.data.enhanced_prompt,
-              generated_image: aiResult.data.generated_image,
-              edit_steps: aiResult.data.edit_steps,
-              confidence_score: aiResult.data.confidence_score,
-              timestamp: new Date().toISOString()
+        // 💾 SAVE AI INTERACTION TO CHAT HISTORY (CLIENT-SIDE ONLY)
+        if (typeof window !== 'undefined') {
+          // Use setTimeout to defer the chat saving until after the current render cycle
+          setTimeout(async () => {
+            try {
+              // Call the API directly instead of using the context hook
+              const chatData = {
+                userPrompt: prompt,
+                aiResponse: aiResult.data,
+                metadata: {
+                  image_url: originalImageData || mediaUrl,
+                  media_type: mediaType,
+                  workflow_mode: workflowMode,
+                  selected_styles: selectedPromptStyles,
+                  main_focus: selectedMainFocus,
+                  strategy: aiResult.data.strategy,
+                  enhanced_prompt: aiResult.data.enhanced_prompt,
+                  generated_image: aiResult.data.generated_image,
+                  edit_steps: aiResult.data.edit_steps,
+                  confidence_score: aiResult.data.confidence_score,
+                  timestamp: new Date().toISOString()
+                }
+              };
+
+              // Save via API call instead of context
+              const response = await fetch('/api/ai/chats/save-interaction', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chatData),
+              });
+
+              if (response.ok) {
+                console.log('✅ AI interaction saved to chat history');
+              } else {
+                console.log('💾 Failed to save chat interaction:', response.statusText);
+              }
+            } catch (saveError) {
+              console.error('❌ Failed to save AI interaction to chat history:', saveError);
+              // Don't fail the main flow if chat saving fails
             }
-          );
-          console.log('✅ AI interaction saved to chat history');
-        } catch (saveError) {
-          console.error('❌ Failed to save AI interaction to chat history:', saveError);
-          // Don't fail the main flow if chat saving fails
+          }, 100);
         }
       } else {
         throw new Error('AI response format invalid')
