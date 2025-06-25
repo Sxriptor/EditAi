@@ -1821,6 +1821,7 @@ export default function ColorGradeDashboard() {
                 headers: {
                   'Content-Type': 'application/json',
                 },
+                credentials: 'include', // Include cookies for Supabase auth
                 body: JSON.stringify(chatData),
               });
 

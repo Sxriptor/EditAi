@@ -63,6 +63,7 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for Supabase auth
       });
 
       if (!response.ok) {
@@ -88,6 +89,7 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for Supabase auth
         body: JSON.stringify(message),
       });
 
@@ -117,22 +119,28 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const loadChatHistory = async (): Promise<void> => {
     try {
-      const response = await fetch('/api/ai/chats');
+      const response = await fetch('/api/ai/chats', {
+        credentials: 'include', // Include cookies for Supabase auth
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to load chat history');
+        const errorText = await response.text();
+        throw new Error(`Failed to load chat history: ${response.status} - ${errorText}`);
       }
 
       const sessions = await response.json();
       setChatSessions(sessions);
     } catch (error) {
       console.error('Error loading chat history:', error);
+      throw error; // Re-throw to show user the actual error
     }
   };
 
   const loadChatMessages = async (sessionId: string): Promise<void> => {
     try {
-      const response = await fetch(`/api/ai/chats/${sessionId}`);
+      const response = await fetch(`/api/ai/chats/${sessionId}`, {
+        credentials: 'include', // Include cookies for Supabase auth
+      });
       
       if (!response.ok) {
         throw new Error('Failed to load chat messages');
@@ -201,6 +209,7 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies for Supabase auth
         body: JSON.stringify({ prompt: firstPrompt }),
       });
 

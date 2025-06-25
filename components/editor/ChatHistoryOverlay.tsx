@@ -23,7 +23,10 @@ const ChatHistoryOverlay = () => {
 
   useEffect(() => {
     if (showChatHistory && chatSessions.length === 0) {
-      loadChatHistory();
+      loadChatHistory().catch((error) => {
+        console.error('Failed to load chat history:', error);
+        // Don't crash the UI - just log the error
+      });
     }
   }, [showChatHistory]);
 

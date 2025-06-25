@@ -109,17 +109,39 @@ export async function POST(request: Request) {
 
     if (!sessionData?.title) {
       try {
-        // Generate title
-        const titleResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/ai/chats/${sessionId}/title`, {
+        // Generate title using OpenAI directly (avoid circular API calls)
+        const titleResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
           },
-          body: JSON.stringify({ prompt: userPrompt }),
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a helpful assistant that generates concise, descriptive titles for AI editing conversations. Create a title that captures the essence of the user\'s request in 3-5 words. Examples: "Golden Hour Portrait", "Cinematic Color Grade", "Black & White Edit", "Film Grain Effect". Respond only with the title, no quotes or extra text.'
+              },
+              {
+                role: 'user',
+                content: `Generate a title for this AI editing request: "${userPrompt}"`
+              }
+            ],
+            max_tokens: 20,
+            temperature: 0.7
+          }),
         });
-        
-        if (!titleResponse.ok) {
-          console.warn('Failed to generate session title');
+
+        if (titleResponse.ok) {
+          const titleData = await titleResponse.json();
+          const title = titleData.choices[0]?.message.content?.trim() || 'New Chat';
+          
+          // Update the session with the generated title
+          await supabase
+            .from('chat_sessions')
+            .update({ title })
+            .eq('id', sessionId);
         }
       } catch (titleError) {
         console.warn('Error generating session title:', titleError);
