@@ -1791,55 +1791,8 @@ export default function ColorGradeDashboard() {
         // Set AI summary for UI display
         setAiSummary(aiResult.data.edit_summary)
 
-        // 💾 SAVE AI INTERACTION TO CHAT HISTORY (CLIENT-SIDE ONLY)
-        if (typeof window !== 'undefined') {
-          // Use setTimeout to defer the chat saving until after the current render cycle
-          setTimeout(async () => {
-            try {
-              // Call the API directly instead of using the context hook
-              const chatData = {
-                userPrompt: prompt,
-                aiResponse: aiResult.data,
-                metadata: {
-                  image_url: originalImageData || mediaUrl,
-                  media_type: mediaType,
-                  workflow_mode: workflowMode,
-                  selected_styles: selectedPromptStyles,
-                  main_focus: selectedMainFocus,
-                  strategy: aiResult.data.strategy,
-                  enhanced_prompt: aiResult.data.enhanced_prompt,
-                  generated_image: aiResult.data.generated_image,
-                  edit_steps: aiResult.data.edit_steps,
-                  confidence_score: aiResult.data.confidence_score,
-                  timestamp: new Date().toISOString()
-                }
-              };
-
-              // Save via API call instead of context (only if authenticated)
-              if (session?.access_token) {
-                const response = await fetch('/api/ai/chats/save-interaction', {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${session.access_token}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(chatData),
-                });
-
-                if (response.ok) {
-                  console.log('✅ AI interaction saved to chat history');
-                } else {
-                  console.log('💾 Failed to save chat interaction:', response.statusText);
-                }
-              } else {
-                console.log('💾 Skipping chat save - no authentication token');
-              }
-            } catch (saveError) {
-              console.error('❌ Failed to save AI interaction to chat history:', saveError);
-              // Don't fail the main flow if chat saving fails
-            }
-          }, 100);
-        }
+        // 💾 CHAT SAVING TEMPORARILY DISABLED TO AVOID 502 ERRORS
+        // TODO: Re-implement chat saving without affecting main AI processing flow
       } else {
         throw new Error('AI response format invalid')
       }
