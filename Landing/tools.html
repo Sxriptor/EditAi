@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Tools - ColorGrade | Cinema-Grade Editing Power</title>
+    <link rel="icon" type="image/png" href="faviconcolor.png">
+    <title>Professional Tools - Amenta | Cinema-Grade Editing Power</title>
     <style>
         :root {
             --bg-primary: #0a0a0a;
@@ -19,19 +20,34 @@
         }
 
         [data-theme="light"] {
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
             --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-tertiary: #e9ecef;
-            --text-primary: #212529;
-            --text-secondary: #495057;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
+            --bg-secondary: #f5f5f5;
+            --accent-primary: #2563eb;
+            --accent-secondary: #1d4ed8;
+            --border-color: #e5e5e5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --header-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --header-bg: rgba(10, 10, 10, 0.95);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         body {
@@ -53,10 +69,11 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--header-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
+            color: var(--text-primary);
         }
 
         nav {
@@ -73,6 +90,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: var(--text-primary) !important;
         }
 
         .nav-links {
@@ -82,7 +100,7 @@
         }
 
         .nav-links a {
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -96,13 +114,13 @@
         .nav-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .theme-toggle {
             background: none;
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             padding: 0.5rem;
             border-radius: 8px;
             cursor: pointer;
@@ -114,17 +132,20 @@
             color: var(--accent-primary);
         }
 
-        .cta-button {
+        .nav-controls .cta-button {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.6rem 1rem;  /* Increased vertical padding */
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            margin: 1rem 0;
         }
 
-        .cta-button:hover {
+
+        .nav-controls .cta-button:hover {
             transform: translateY(-2px);
         }
 
@@ -182,7 +203,7 @@
         .tool-nav-btn {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            color: var(--text-primary);
             padding: 0.75rem 1.5rem;
             border-radius: 25px;
             cursor: pointer;
@@ -578,13 +599,29 @@
                 margin-bottom: 3rem;
             }
 
+            /* Tools grid - 2 columns on mobile */
             .tools-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
 
             .tool-card {
-                padding: 2rem;
+                padding: 1.2rem;
+            }
+
+            .tool-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+
+            .tool-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .tool-card p {
+                font-size: 0.85rem;
             }
 
             .tools-nav {
@@ -595,6 +632,16 @@
             .tool-nav-btn {
                 padding: 0.6rem 1.2rem;
                 font-size: 0.9rem;
+            }
+
+            /* Showcase grid - 2 columns on mobile */
+            .showcase-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .showcase-item {
+                padding: 1rem;
             }
         }
 
@@ -608,7 +655,7 @@
             }
 
             .tool-card {
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             .tools-nav {
@@ -621,6 +668,16 @@
                 width: 100%;
                 text-align: center;
             }
+
+            /* Single column for very small screens */
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Keep showcase 2 columns even on small screens */
+            .showcase-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -628,7 +685,7 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <a href="/" class="logo">ColorGrade</a>
+            <a href="/" class="logo">Amenta</a>
             <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
@@ -638,8 +695,8 @@
                 <li><a href="pricing.html">Pricing</a></li>
             </ul>
             <div class="nav-controls">
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-                <a href="#" class="cta-button">Get Started</a>
+                <button class="theme-toggle" id="theme-toggle">🌙</button>
+                <a href="https://edit.amenta.io/" class="cta-button">Get Started</a>
             </div>
         </nav>
     </header>
@@ -781,7 +838,7 @@
     <section class="integrations-section">
         <div class="container">
             <h2 class="section-title">Seamless Integrations</h2>
-            <p class="section-subtitle">ColorGrade works with every tool in your creative workflow. Start here, finish anywhere.</p>
+            <p class="section-subtitle">Amenta works with every tool in your creative workflow. Start here, finish anywhere.</p>
             
             <div class="integrations-grid">
                 <div class="integration-card">
@@ -829,7 +886,7 @@
             <div class="showcase-grid">
                 <div class="showcase-content">
                     <h3>Built for Professionals, Designed for Everyone</h3>
-                    <p>ColorGrade combines the power of $10,000 professional software with the simplicity of consumer apps. Get Hollywood-grade results without the Hollywood-grade learning curve.</p>
+                    <p>Amenta combines the power of $10,000 professional software with the simplicity of consumer apps. Get Hollywood-grade results without the Hollywood-grade learning curve.</p>
                     
                     <div class="showcase-stats">
                         <div class="stat-item">
@@ -866,7 +923,7 @@
         <div class="container">
             <h2>Ready to Unleash Your Creativity?</h2>
             <p>Stop fighting with complicated software. Start creating with tools that understand your vision and help you achieve it faster than ever before.</p>
-            <a href="pricing.html" class="btn-primary">
+            <a href="https://edit.amenta.io/" class="btn-primary">
                 <span>🚀</span>
                 Start Using Professional Tools
             </a>
@@ -874,31 +931,26 @@
     </section>
 
     <script>
-        function toggleTheme() {
-            const body = document.body;
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
             const currentTheme = body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
             body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
-            const themeToggle = document.querySelector('.theme-toggle');
             themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
-        }
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
-        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
-
-        // Tool navigation
-        document.querySelectorAll('.tool-nav-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
         });
 
+        // Mobile Menu Functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
 
@@ -911,6 +963,14 @@
             if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
                 navLinks.classList.remove('active');
             }
+        });
+
+        // Tool navigation
+        document.querySelectorAll('.tool-nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
     </script>
 </body>

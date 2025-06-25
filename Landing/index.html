@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ColorGrade - Professional Color Grading Made Simple</title>
+    <link rel="icon" type="image/png" href="faviconcolor.png">
+    <title>Amenta - Professional Color Grading Made Simple</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         :root {
@@ -23,17 +25,37 @@
             --accent-gradient: linear-gradient(135deg, #ff6b4a 0%, #4a9eff 100%);
             --border-color: #333333;
             --hover-bg: #333333;
+            --bg-primary-rgb: 10, 10, 10;
         }
 
         [data-theme="light"] {
             --bg-primary: #ffffff;
             --bg-secondary: #f8f9fa;
             --bg-tertiary: #e9ecef;
-            --text-primary: #333333;
-            --text-secondary: #666666;
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
             --text-muted: #999999;
             --border-color: #e0e0e0;
             --hover-bg: #f0f0f0;
+            --accent-primary: #2563eb;
+            --accent-secondary: #1d4ed8;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --bg-primary-rgb: 255, 255, 255;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #666666;
+            --border-color: #2a2a2a;
+            --hover-bg: #333333;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --bg-primary-rgb: 10, 10, 10;
         }
 
         body {
@@ -43,6 +65,7 @@
             line-height: 1.6;
             overflow-x: hidden;
             transition: all 0.3s ease;
+            padding-top: 0;
         }
 
         .container {
@@ -53,7 +76,7 @@
 
         /* Header */
         header {
-            position: fixed;
+            position: sticky;
             top: 0;
             left: 0;
             right: 0;
@@ -61,6 +84,7 @@
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
+            color: var(--text-primary);
         }
 
         [data-theme="light"] header {
@@ -81,6 +105,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: var(--text-primary);
         }
 
         .nav-links {
@@ -90,7 +115,7 @@
         }
 
         .nav-links a {
-            color: var(--text-secondary);
+            color: var(--text-primary);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -104,7 +129,7 @@
         .nav-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;  /* Increased gap between theme toggle and CTA button */
         }
 
         .theme-toggle {
@@ -122,17 +147,19 @@
             color: var(--accent-primary);
         }
 
-        .cta-button {
+        .nav-controls .cta-button {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.6rem 1rem;  /* Increased vertical padding */
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            margin: 1rem 0;
         }
 
-        .cta-button:hover {
+        .nav-controls .cta-button:hover {
             transform: translateY(-2px);
         }
 
@@ -1279,13 +1306,13 @@
             border-radius: 16px;
             padding: 2rem;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .tool-card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-5px);
             border-color: var(--accent-primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         .tool-icon {
@@ -1432,7 +1459,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -1440,8 +1467,25 @@
             }
         }
 
-        .fade-in {
-            animation: fadeInUp 0.8s ease-out;
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .float {
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .float-delay-1 {
+            animation-delay: 0.5s;
+        }
+
+        .float-delay-2 {
+            animation-delay: 1s;
         }
 
         /* Responsive Design */
@@ -1500,7 +1544,7 @@
             }
 
             .mobile-menu-btn {
-                display: block;
+                display: block; /* Shown on mobile */
             }
 
             .nav-links {
@@ -1542,57 +1586,63 @@
                 grid-template-columns: 1fr;
             }
 
-            .section-title {
-                font-size: 2rem;
-            }
-
-            .section-subtitle {
-                font-size: 1.1rem;
-            }
-
-            .gallery-grid {
+            /* Feature cards - 2 columns on mobile */
+            .features-grid {
                 grid-template-columns: repeat(2, 1fr);
-            }
-
-            .gallery-item:nth-child(3),
-            .gallery-item:nth-child(6) {
-                grid-column: span 1;
-            }
-
-            .benefits-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .tools-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .quick-actions {
-                flex-direction: column;
-            }
-
-            .before-after {
-                flex-direction: column;
                 gap: 1rem;
             }
 
-            .result-arrow {
-                transform: rotate(90deg);
-                font-size: 1.5rem;
+            /* Tool cards - 2 columns on mobile */
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
 
-            .ai-process {
-                flex-direction: column;
-                gap: 0.5rem;
+            /* Workflow steps - 2 columns on mobile */
+            .workflow-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
 
-            .process-step {
-                flex-direction: row;
-                justify-content: center;
-                padding: 0.5rem;
+            /* Stats - 2 columns on mobile */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
 
+            /* Benefits - 2 columns on mobile */
+            .benefits-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            /* Reduce card padding on mobile */
+            .feature-card,
+            .tool-card,
+            .benefit-card {
+                padding: 1.2rem;
+            }
+
+            /* Smaller icons on mobile */
+            .feature-icon,
+            .tool-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            /* Smaller text on mobile */
+            .feature-card h3,
+            .tool-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .feature-card p,
+            .tool-card p {
+                font-size: 0.85rem;
+            }
+
+            /* Editor showcase - single column on mobile */
             .editor-showcase-grid {
                 grid-template-columns: 1fr;
                 gap: 2rem;
@@ -1606,8 +1656,27 @@
                 font-size: 2rem;
             }
 
+            .editor-content p {
+                font-size: 1rem;
+            }
+
+            .editor-features {
+                gap: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .editor-feature {
+                gap: 0.75rem;
+            }
+
+            .editor-feature .feature-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+
             .interface-mockup {
-                max-width: 100%;
+                margin-top: 1rem;
             }
 
             .control-item {
@@ -1619,29 +1688,8 @@
                 font-size: 0.8rem;
             }
 
-            .workflow-steps {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .workflow-step {
-                padding: 1.5rem;
-            }
-
-            .footer-content {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-                text-align: center;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .footer-links {
-                justify-content: center;
+            .interface-body {
+                padding: 1rem;
             }
         }
 
@@ -1663,6 +1711,62 @@
                 flex-direction: column;
                 gap: 1rem;
             }
+
+            /* Single column for very small screens */
+            .features-grid,
+            .tools-grid,
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Keep stats 2 columns even on small screens */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Editor showcase further adjustments for small screens */
+            .editor-content h2 {
+                font-size: 1.8rem;
+            }
+
+            .editor-content p {
+                font-size: 0.9rem;
+            }
+
+            .editor-feature h4 {
+                font-size: 1rem;
+            }
+
+            .editor-feature p {
+                font-size: 0.85rem;
+            }
+
+            .control-item {
+                grid-template-columns: 60px 1fr 35px;
+                gap: 0.5rem;
+            }
+
+            .control-label {
+                font-size: 0.75rem;
+            }
+
+            .control-value {
+                font-size: 0.75rem;
+            }
+
+            .interface-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .tab {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .ai-assist {
+                padding: 0.6rem;
+                font-size: 0.8rem;
+            }
         }
 
         .mobile-menu-btn {
@@ -1680,7 +1784,7 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <a href="/" class="logo">ColorGrade</a>
+            <a href="/" class="logo">Amenta</a>
             <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
@@ -1691,7 +1795,7 @@
             </ul>
             <div class="nav-controls">
                 <button class="theme-toggle" id="theme-toggle">☀️</button>
-                <a href="#" class="cta-button">Get Started</a>
+                <a href="https://edit.amenta.io/" class="cta-button">Get Started</a>
             </div>
         </nav>
     </header>
@@ -1708,11 +1812,11 @@
                     <h1>The <span class="highlight">AI Editing Assistant</span> That Gets You</h1>
                     <p>Transform your content with one prompt. Whether you're cutting footage or reinventing a self-portrait, our assistant brings your creative vision to life — with memory, style, and speed.</p>
                     <div class="hero-buttons">
-                        <a href="#" class="btn-primary">
+                        <a href="https://edit.amenta.io/" class="btn-primary">
                             <span>✨</span>
                             Try It Now
                         </a>
-                        <a href="#" class="btn-secondary">
+                        <a href="https://edit.amenta.io/" class="btn-secondary">
                             <span>🎬</span>
                             See Real Edits
                         </a>
@@ -1820,7 +1924,7 @@
                         </div>
                     </div>
                     <div class="editor-cta">
-                        <a href="#" class="btn-secondary">
+                        <a href="https://edit.amenta.io/" class="btn-secondary">
                             <span>🎨</span>
                             Try the Editor
                         </a>
@@ -1904,7 +2008,7 @@
     <section class="benefits">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">Why ColorGrade AI</div>
+                <div class="section-badge">Why AMENTA AI</div>
                 <h2 class="section-title">One assistant. Infinite possibilities.</h2>
                 <p class="section-subtitle">Combining the best of professional editing power, AI assistance, and visual excellence</p>
             </div>
@@ -2144,7 +2248,7 @@
             <div class="section-header">
                 <div class="section-badge">Professional Tools</div>
                 <h2 class="section-title">Edit directly or export anywhere.</h2>
-                <p class="section-subtitle">Use our built-in professional editor for complete control, or export to any software. ColorGrade adapts to your workflow, not the other way around.</p>
+                <p class="section-subtitle">Use our built-in professional editor for complete control, or export to any software. Amenta adapts to your workflow, not the other way around.</p>
             </div>
             <div class="tools-grid">
                 <div class="tool-card">
@@ -2156,7 +2260,7 @@
                 <div class="tool-card">
                     <div class="tool-icon">🎨</div>
                     <h3>Built-in Editor</h3>
-                    <p>Professional color wheels, curves, and LUTs right in the app. Edit everything without leaving ColorGrade.</p>
+                    <p>Professional color wheels, curves, and LUTs right in the app. Edit everything without leaving Amenta.</p>
                     <div class="tool-badge">Core Feature</div>
                 </div>
                 <div class="tool-card">
@@ -2186,7 +2290,7 @@
                 <div class="tool-card">
                     <div class="tool-icon">🔄</div>
                     <h3>Workflow Freedom</h3>
-                    <p>Start with AI, refine in our editor, then export to any software. Or just stay in ColorGrade - your choice.</p>
+                    <p>Start with AI, refine in our editor, then export to any software. Or just stay in Amenta - your choice.</p>
                     <div class="tool-badge">Flexibility</div>
                 </div>
                 <div class="tool-card">
@@ -2206,7 +2310,7 @@
                 <h2>Try It Free — Describe your vision. Watch it become real.</h2>
                 <p>Join thousands of creators who've transformed their content with AI. No credit card required.</p>
                 <div class="cta-buttons">
-                    <a href="#" class="btn-primary large">
+                    <a href="https://edit.amenta.io/" class="btn-primary large">
                         <span>🚀</span>
                         Try It Now
                     </a>
@@ -2238,7 +2342,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <h4>ColorGrade</h4>
+                    <h4>AMENTA</h4>
                     <p>The most powerful color grading software designed for photographers, filmmakers, and visual creators who demand excellence.</p>
                     <div class="footer-social">
                         <a href="#" title="Twitter">🐦</a>
@@ -2249,9 +2353,9 @@
                 </div>
                 <div class="footer-section">
                     <h4>Product</h4>
-                    <a href="#">Features</a>
-                    <a href="#">Pricing</a>
-                    <a href="#">Download</a>
+                    <a href="features.html">Features</a>
+                    <a href="pricing.html">Pricing</a>
+                    <a href="https://edit.amenta.io/">Download</a>
                     <a href="#">System Requirements</a>
                     <a href="#">What's New</a>
                 </div>
@@ -2273,7 +2377,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 ColorGrade. All rights reserved.</p>
+                <p>&copy; 2024 Amenta. All rights reserved.</p>
                 <div class="footer-links">
                     <a href="#">Privacy</a>
                     <a href="#">Terms</a>
@@ -2284,34 +2388,37 @@
     </footer>
 
     <script>
-        // Theme Management
-        function toggleTheme() {
-            const body = document.body;
-            const themeToggle = document.querySelector('.theme-toggle');
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
             const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
-            if (currentTheme === 'light') {
-                body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = '🌙';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                body.setAttribute('data-theme', 'light');
-                themeToggle.textContent = '☀️';
-                localStorage.setItem('theme', 'light');
-            }
-        }
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
+        });
 
-        // Initialize theme from localStorage or default to dark
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme');
-            const themeToggle = document.querySelector('.theme-toggle');
-            
-            if (savedTheme) {
-                document.body.setAttribute('data-theme', savedTheme);
-                themeToggle.textContent = savedTheme === 'light' ? '☀️' : '🌙';
-            } else {
-                document.body.setAttribute('data-theme', 'dark');
-                themeToggle.textContent = '🌙';
+        // Mobile Menu Functionality
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
+                navLinks.classList.remove('active');
             }
         });
 
@@ -2344,82 +2451,22 @@
         });
 
         // Intersection Observer for animations
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.style.opacity = '1';
                     entry.target.style.transform = 'translateY(0)';
-                    entry.target.classList.add('animate-in');
+                    observer.unobserve(entry.target); // Stop observing once animated
                 }
             });
-        }, observerOptions);
-
-        // Observe elements for animation
-        document.addEventListener('DOMContentLoaded', () => {
-            // Start typing animation
-            setTimeout(typeText, 1000);
-            
-            // Start AI processing simulation
-            setTimeout(simulateAIProcessing, 2000);
-
-            // Animate benefit cards
-            document.querySelectorAll('.benefit-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(30px)';
-                card.style.transition = `opacity 0.8s ease ${index * 0.1}s, transform 0.8s ease ${index * 0.1}s`;
-                observer.observe(card);
-            });
-
-            // Animate workflow steps
-            document.querySelectorAll('.workflow-step').forEach((step, index) => {
-                step.style.opacity = '0';
-                step.style.transform = 'translateX(-30px)';
-                step.style.transition = `opacity 0.8s ease ${index * 0.3}s, transform 0.8s ease ${index * 0.3}s`;
-                observer.observe(step);
-            });
-
-            // Animate tool cards
-            document.querySelectorAll('.tool-card').forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
-                observer.observe(card);
-            });
-
-            // Animate gallery items
-            document.querySelectorAll('.gallery-item').forEach((item, index) => {
-                item.style.opacity = '0';
-                item.style.transform = 'scale(0.9)';
-                item.style.transition = `opacity 0.5s ease ${index * 0.05}s, transform 0.5s ease ${index * 0.05}s`;
-                observer.observe(item);
-            });
-
-            // Animate prompt demo sections
-            const promptDemo = document.querySelector('.prompt-demo-grid');
-            if (promptDemo) {
-                promptDemo.style.opacity = '0';
-                promptDemo.style.transform = 'translateY(40px)';
-                promptDemo.style.transition = 'opacity 1s ease 0.5s, transform 1s ease 0.5s';
-                observer.observe(promptDemo);
-            }
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px'
         });
 
-        // Enhanced gallery interactions
-        document.querySelectorAll('.gallery-item').forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                item.style.transform = 'scale(1.05)';
-                item.style.zIndex = '10';
-            });
-            
-            item.addEventListener('mouseleave', () => {
-                item.style.transform = 'scale(1)';
-                item.style.zIndex = '1';
-            });
+        // Observe all animated elements
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
         });
 
         // Typing animation for prompt demo
@@ -2534,21 +2581,83 @@
 
         // Initialize with loading state
         document.body.style.opacity = '0';
-        document.body.style.transform = 'translateY(20px)';
-        document.body.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+        document.body.style.transform = 'translateY(10px)';
+        document.body.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
 
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-
-        mobileMenuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
+        // Observe elements for animation
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `opacity 0.4s ease ${index * 0.05}s, transform 0.4s ease ${index * 0.05}s`;
         });
 
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
-                navLinks.classList.remove('active');
-            }
+        document.querySelectorAll('.workflow-step').forEach((step, index) => {
+            step.style.opacity = '0';
+            step.style.transform = 'translateX(-20px)';
+            step.style.transition = `opacity 0.4s ease ${index * 0.15}s, transform 0.4s ease ${index * 0.15}s`;
+        });
+
+        document.querySelectorAll('.pricing-card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(15px)';
+            card.style.transition = `opacity 0.4s ease ${index * 0.05}s, transform 0.4s ease ${index * 0.05}s`;
+        });
+
+        document.querySelectorAll('.tool-card').forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'scale(0.95)';
+            item.style.transition = `opacity 0.3s ease ${index * 0.03}s, transform 0.3s ease ${index * 0.03}s`;
+        });
+
+        const promptDemo = document.querySelector('.prompt-demo');
+        if (promptDemo) {
+            promptDemo.style.opacity = '0';
+            promptDemo.style.transform = 'translateY(20px)';
+            promptDemo.style.transition = 'opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s';
+        }
+
+        // Animation functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial page load animation
+            document.body.style.opacity = '1';
+            document.body.style.transform = 'translateY(0)';
+            document.body.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+
+            // Setup intersection observer for fade-in animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '20px'
+            });
+
+            // Apply initial state and observe elements
+            const animatedElements = [
+                '.feature-card',
+                '.workflow-step',
+                '.pricing-card',
+                '.tool-card',
+                '.prompt-demo',
+                '.benefit-card',
+                '.gallery-item'
+            ];
+
+            animatedElements.forEach(selector => {
+                document.querySelectorAll(selector).forEach((el, index) => {
+                    // Set initial state
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    el.style.transition = `opacity 0.4s ease ${index * 0.1}s, transform 0.4s ease ${index * 0.1}s`;
+                    // Observe element
+                    observer.observe(el);
+                });
+            });
         });
     </script>
 </body>

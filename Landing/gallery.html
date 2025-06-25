@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gallery - ColorGrade | Incredible AI Transformations</title>
+    <link rel="icon" type="image/png" href="faviconcolor.png">
+    <title>Gallery - Amenta | Incredible AI Transformations</title>
     <style>
         :root {
             --bg-primary: #0a0a0a;
@@ -19,19 +20,34 @@
         }
 
         [data-theme="light"] {
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
             --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-tertiary: #e9ecef;
-            --text-primary: #212529;
-            --text-secondary: #495057;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
+            --bg-secondary: #f5f5f5;
+            --accent-primary: #2563eb;
+            --accent-secondary: #1d4ed8;
+            --border-color: #e5e5e5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --header-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --header-bg: rgba(10, 10, 10, 0.95);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         body {
@@ -53,10 +69,11 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--header-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
+            color: var(--text-primary);
         }
 
         nav {
@@ -73,6 +90,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: var(--text-primary) !important;
         }
 
         .nav-links {
@@ -82,7 +100,7 @@
         }
 
         .nav-links a {
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -96,13 +114,13 @@
         .nav-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .theme-toggle {
             background: none;
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             padding: 0.5rem;
             border-radius: 8px;
             cursor: pointer;
@@ -114,17 +132,20 @@
             color: var(--accent-primary);
         }
 
-        .cta-button {
+        .nav-controls .cta-button {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.6rem 1rem;  /* Increased vertical padding */
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            margin: 1rem 0;
         }
 
-        .cta-button:hover {
+
+        .nav-controls .cta-button:hover {
             transform: translateY(-2px);
         }
 
@@ -461,9 +482,14 @@
                 padding: 4rem 0;
             }
 
+            /* Gallery grid - 2 columns on mobile */
             .gallery-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .gallery-item {
+                border-radius: 12px;
             }
 
             .gallery-filters {
@@ -477,7 +503,29 @@
             }
 
             .before-after-container {
-                height: 200px;
+                height: 180px;
+            }
+
+            .gallery-info {
+                padding: 1rem;
+            }
+
+            .gallery-info h3 {
+                font-size: 1rem;
+            }
+
+            .gallery-info p {
+                font-size: 0.85rem;
+            }
+
+            /* Showcase stats - 2 columns on mobile */
+            .showcase-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .stat-item {
+                padding: 1rem;
             }
         }
 
@@ -502,7 +550,17 @@
             }
 
             .before-after-container {
-                height: 180px;
+                height: 160px;
+            }
+
+            /* Single column for very small screens */
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            /* Keep stats 2 columns even on small screens */
+            .showcase-stats {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -511,7 +569,7 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <a href="/" class="logo">ColorGrade</a>
+            <a href="/" class="logo">Amenta</a>
             <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
@@ -521,8 +579,8 @@
                 <li><a href="pricing.html">Pricing</a></li>
             </ul>
             <div class="nav-controls">
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-                <a href="#" class="cta-button">Get Started</a>
+                <button class="theme-toggle" id="theme-toggle">🌙</button>
+                <a href="https://edit.amenta.io/" class="cta-button">Get Started</a>
             </div>
         </nav>
     </header>
@@ -727,7 +785,7 @@
     <section class="showcase-section">
         <div class="container">
             <h2 class="section-title">The Numbers Don't Lie</h2>
-            <p class="section-subtitle">ColorGrade is transforming how creators work, one prompt at a time.</p>
+            <p class="section-subtitle">Amenta is transforming how creators work, one prompt at a time.</p>
             
             <div class="showcase-grid">
                 <div class="showcase-item">
@@ -762,7 +820,7 @@
         <div class="container">
             <h2>Your Next Masterpiece Awaits</h2>
             <p>Stop dreaming about perfect edits and start creating them. Join the creators who've already discovered the future of editing.</p>
-            <a href="pricing.html" class="btn-primary">
+            <a href="https://edit.amenta.io/" class="btn-primary">
                 <span>✨</span>
                 Create Your First Transformation
             </a>
@@ -770,31 +828,26 @@
     </section>
 
     <script>
-        function toggleTheme() {
-            const body = document.body;
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
             const currentTheme = body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
             body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
-            const themeToggle = document.querySelector('.theme-toggle');
             themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
-        }
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
-        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
-
-        // Filter functionality
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            });
         });
 
+        // Mobile Menu Functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
 
@@ -807,6 +860,14 @@
             if (!e.target.closest('.nav-links') && !e.target.closest('.mobile-menu-btn')) {
                 navLinks.classList.remove('active');
             }
+        });
+
+        // Gallery filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
     </script>
 </body>

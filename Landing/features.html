@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Features - ColorGrade | The World's First Video Editing Assistant</title>
+    <link rel="icon" type="image/png" href="faviconcolor.png">
+    <title>Features - Amenta | The World's First Video Editing Assistant</title>
     <style>
         :root {
             --bg-primary: #0a0a0a;
@@ -19,19 +20,34 @@
         }
 
         [data-theme="light"] {
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
             --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-tertiary: #e9ecef;
-            --text-primary: #212529;
-            --text-secondary: #495057;
-            --text-muted: #6c757d;
-            --border-color: #dee2e6;
+            --bg-secondary: #f5f5f5;
+            --accent-primary: #2563eb;
+            --accent-secondary: #1d4ed8;
+            --border-color: #e5e5e5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --header-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --header-bg: rgba(10, 10, 10, 0.95);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
 
         body {
@@ -53,10 +69,11 @@
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
+            background: var(--header-bg);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-color);
             z-index: 1000;
+            color: var(--text-primary);
         }
 
         nav {
@@ -73,6 +90,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            color: var(--text-primary) !important;
         }
 
         .nav-links {
@@ -82,7 +100,7 @@
         }
 
         .nav-links a {
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s ease;
@@ -96,13 +114,13 @@
         .nav-controls {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .theme-toggle {
             background: none;
             border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            color: var(--text-primary) !important;
             padding: 0.5rem;
             border-radius: 8px;
             cursor: pointer;
@@ -114,17 +132,20 @@
             color: var(--accent-primary);
         }
 
-        .cta-button {
+        .nav-controls .cta-button {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
+            padding: 0.6rem 1rem;  /* Increased vertical padding */
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+            margin: 1rem 0;
         }
 
-        .cta-button:hover {
+
+        .nav-controls .cta-button:hover {
             transform: translateY(-2px);
         }
 
@@ -454,13 +475,29 @@
                 font-size: 2rem;
             }
 
+            /* Features grid - 2 columns on mobile */
             .features-grid {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
 
             .feature-card {
-                padding: 1.8rem;
+                padding: 1.2rem;
+            }
+
+            .feature-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .feature-card p {
+                font-size: 0.85rem;
             }
 
             .section-title {
@@ -477,14 +514,19 @@
                 font-size: 0.9rem;
             }
 
+            /* Single column for very small screens */
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
             .feature-card h3 {
-                font-size: 1.3rem;
+                font-size: 1rem;
             }
 
             .feature-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.2rem;
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
         }
     </style>
@@ -493,7 +535,7 @@
     <!-- Header -->
     <header>
         <nav class="container">
-            <a href="/" class="logo">ColorGrade</a>
+            <a href="/" class="logo">Amenta</a>
             <button class="mobile-menu-btn">☰</button>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
@@ -504,7 +546,7 @@
             </ul>
             <div class="nav-controls">
                 <button class="theme-toggle" id="theme-toggle">☀️</button>
-                <a href="#" class="cta-button">Get Started</a>
+                <a href="https://edit.amenta.io/" class="cta-button">Get Started</a>
             </div>
         </nav>
     </header>
@@ -517,7 +559,7 @@
                 World's First Video Editing Assistant
             </div>
             <h1>Revolutionary <span class="highlight">AI Features</span> That Change Everything</h1>
-            <p>ColorGrade isn't just another AI tool - it's the future of creative editing. Experience features that no other platform offers, designed specifically for creators who demand both speed and perfection.</p>
+            <p>Amenta isn't just another AI tool - it's the future of creative editing. Experience features that no other platform offers, designed specifically for creators who demand both speed and perfection.</p>
         </div>
     </section>
 
@@ -531,7 +573,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🧠</div>
                     <h3>Memory Engine</h3>
-                    <p>ColorGrade remembers your style, preferences, and past edits. The more you use it, the better it gets at understanding exactly what you want - before you even ask.</p>
+                    <p>Amenta remembers your style, preferences, and past edits. The more you use it, the better it gets at understanding exactly what you want - before you even ask.</p>
                     <ul class="feature-benefits">
                         <li>Learns your unique editing style over time</li>
                         <li>Suggests edits based on your history</li>
@@ -583,7 +625,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🔄</div>
                     <h3>Smart Workflows</h3>
-                    <p>ColorGrade adapts to how you work. Edit entirely in-app, export to your favorite software, or create custom workflows that fit your exact process.</p>
+                    <p>Amenta adapts to how you work. Edit entirely in-app, export to your favorite software, or create custom workflows that fit your exact process.</p>
                     <ul class="feature-benefits">
                         <li>Seamless integration with all major software</li>
                         <li>Custom workflow automation</li>
@@ -596,7 +638,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🎯</div>
                     <h3>Context Awareness</h3>
-                    <p>ColorGrade understands what you're creating. Portrait for LinkedIn? Wedding video? YouTube thumbnail? It automatically optimizes for your specific use case.</p>
+                    <p>Amenta understands what you're creating. Portrait for LinkedIn? Wedding video? YouTube thumbnail? It automatically optimizes for your specific use case.</p>
                     <ul class="feature-benefits">
                         <li>Platform-specific optimization</li>
                         <li>Automatic format recommendations</li>
@@ -612,13 +654,13 @@
     <!-- Comparison Section -->
     <section class="comparison-section">
         <div class="container">
-            <h2 class="section-title">How ColorGrade Compares</h2>
-            <p class="section-subtitle">See why ColorGrade is in a league of its own compared to traditional editing software and other AI tools.</p>
+            <h2 class="section-title">How Amenta Compares</h2>
+            <p class="section-subtitle">See why Amenta is in a league of its own compared to traditional editing software and other AI tools.</p>
             
             <div class="comparison-table">
                 <div class="comparison-header">
                     <h4>Feature</h4>
-                    <h4>ColorGrade</h4>
+                    <h4>Amenta</h4>
                     <h4>Traditional Software</h4>
                     <h4>Other AI Tools</h4>
                 </div>
@@ -680,7 +722,7 @@
         <div class="container">
             <h2>Ready to Experience the Future?</h2>
             <p>Join thousands of creators who've already discovered what editing feels like when AI meets professional tools. Your creative breakthrough is one click away.</p>
-            <a href="pricing.html" class="btn-primary">
+            <a href="https://edit.amenta.io/" class="btn-primary">
                 <span>🚀</span>
                 Start Creating Now
             </a>
@@ -688,23 +730,26 @@
     </section>
 
     <script>
-        function toggleTheme() {
-            const body = document.body;
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.setAttribute('data-theme', savedTheme);
+        themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        
+        // Theme toggle click handler
+        themeToggle.addEventListener('click', () => {
             const currentTheme = body.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
             
             body.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
-            
-            const themeToggle = document.querySelector('.theme-toggle');
             themeToggle.textContent = newTheme === 'light' ? '🌙' : '☀️';
-        }
+        });
 
-        // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
-        document.querySelector('.theme-toggle').textContent = savedTheme === 'light' ? '🌙' : '☀️';
-
+        // Mobile Menu Functionality
         const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
         const navLinks = document.querySelector('.nav-links');
 

@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
-import { ChatHistoryProvider } from '@/lib/chat-history-context'
+import { ChatHistoryProvider, useChatHistory } from '@/lib/chat-history-context'
 import ChatHistoryOverlay from '@/components/editor/ChatHistoryOverlay'
 import { PaymentStatus } from "./payment-status"
 import { Button } from "@/components/ui/button"
@@ -129,6 +129,7 @@ interface LUTPreset {
 export default function ColorGradeDashboard() {
   const { user, session, loading, signOut } = useAuth()
   const { checkCanUseAI, setShowPaymentModal } = useSubscription()
+  const { saveAIInteraction } = useChatHistory()
 
   const { toast } = useToast()
   const [isLoadingPresets, setIsLoadingPresets] = useState(false)
@@ -1787,6 +1788,31 @@ export default function ColorGradeDashboard() {
         
         // Set AI summary for UI display
         setAiSummary(aiResult.data.edit_summary)
+
+        // 💾 SAVE AI INTERACTION TO CHAT HISTORY
+        try {
+          await saveAIInteraction(
+            prompt, // User's original prompt
+            aiResult.data, // Full AI response
+            {
+              image_url: originalImageData || mediaUrl, // Image that was used
+              media_type: mediaType,
+              workflow_mode: workflowMode,
+              selected_styles: selectedPromptStyles,
+              main_focus: selectedMainFocus,
+              strategy: aiResult.data.strategy,
+              enhanced_prompt: aiResult.data.enhanced_prompt,
+              generated_image: aiResult.data.generated_image,
+              edit_steps: aiResult.data.edit_steps,
+              confidence_score: aiResult.data.confidence_score,
+              timestamp: new Date().toISOString()
+            }
+          );
+          console.log('✅ AI interaction saved to chat history');
+        } catch (saveError) {
+          console.error('❌ Failed to save AI interaction to chat history:', saveError);
+          // Don't fail the main flow if chat saving fails
+        }
       } else {
         throw new Error('AI response format invalid')
       }
