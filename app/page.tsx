@@ -1815,20 +1815,24 @@ export default function ColorGradeDashboard() {
                 }
               };
 
-              // Save via API call instead of context
-              const response = await fetch('/api/ai/chats/save-interaction', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include', // Include cookies for Supabase auth
-                body: JSON.stringify(chatData),
-              });
+              // Save via API call instead of context (only if authenticated)
+              if (session?.access_token) {
+                const response = await fetch('/api/ai/chats/save-interaction', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(chatData),
+                });
 
-              if (response.ok) {
-                console.log('✅ AI interaction saved to chat history');
+                if (response.ok) {
+                  console.log('✅ AI interaction saved to chat history');
+                } else {
+                  console.log('💾 Failed to save chat interaction:', response.statusText);
+                }
               } else {
-                console.log('💾 Failed to save chat interaction:', response.statusText);
+                console.log('💾 Skipping chat save - no authentication token');
               }
             } catch (saveError) {
               console.error('❌ Failed to save AI interaction to chat history:', saveError);

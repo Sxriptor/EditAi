@@ -3,14 +3,27 @@ import { createClient } from '@/lib/supabase/server';
 
 // Add a new message to a specific chat session
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
   const sessionId = params.id;
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get the Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
+
+    // Extract the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Use the direct supabase client with the token
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const supabaseClient = createClient();
 
     const body = await request.json();
     const { role, content, metadata } = body;
@@ -26,7 +39,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     // First, verify the user owns this session
-    const { data: session, error: sessionError } = await supabase
+    const { data: session, error: sessionError } = await supabaseClient
       .from('chat_sessions')
       .select('id')
       .eq('id', sessionId)
@@ -38,7 +51,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     // Insert the message
-    const { data: newMessage, error: messageError } = await supabase
+    const { data: newMessage, error: messageError } = await supabaseClient
       .from('chat_messages')
       .insert({
         session_id: sessionId,
@@ -54,7 +67,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     // Update the session's updated_at timestamp
-    await supabase
+    await supabaseClient
       .from('chat_sessions')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', sessionId);

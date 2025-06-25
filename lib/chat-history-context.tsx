@@ -58,12 +58,20 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const createNewChatSession = async (): Promise<string | null> => {
     try {
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch('/api/ai/chats', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies for Supabase auth
       });
 
       if (!response.ok) {
@@ -84,12 +92,20 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const saveChatMessage = async (sessionId: string, message: Omit<ChatMessage, 'id' | 'session_id' | 'created_at'>): Promise<void> => {
     try {
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch(`/api/ai/chats/${sessionId}/messages`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies for Supabase auth
         body: JSON.stringify(message),
       });
 
@@ -119,8 +135,19 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const loadChatHistory = async (): Promise<void> => {
     try {
+      // Get auth token (similar to how it's done in other API calls)
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch('/api/ai/chats', {
-        credentials: 'include', // Include cookies for Supabase auth
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
       });
       
       if (!response.ok) {
@@ -138,8 +165,19 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const loadChatMessages = async (sessionId: string): Promise<void> => {
     try {
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch(`/api/ai/chats/${sessionId}`, {
-        credentials: 'include', // Include cookies for Supabase auth
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
       });
       
       if (!response.ok) {
@@ -204,12 +242,20 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const generateSessionTitle = async (sessionId: string, firstPrompt: string): Promise<void> => {
     try {
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
       const response = await fetch(`/api/ai/chats/${sessionId}/title`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies for Supabase auth
         body: JSON.stringify({ prompt: firstPrompt }),
       });
 

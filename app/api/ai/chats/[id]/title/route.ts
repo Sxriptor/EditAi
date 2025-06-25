@@ -8,14 +8,27 @@ const openai = new OpenAI({
 
 // Generate an AI title for a chat session based on the first prompt
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
   const sessionId = params.id;
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get the Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
+
+    // Extract the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Use the direct supabase client with the token
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const supabaseClient = createClient();
 
     const body = await request.json();
     const { prompt } = body;
@@ -25,7 +38,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     }
 
     // First, verify the user owns this session
-    const { data: session, error: sessionError } = await supabase
+    const { data: session, error: sessionError } = await supabaseClient
       .from('chat_sessions')
       .select('id')
       .eq('id', sessionId)
@@ -57,7 +70,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       const title = response.choices[0]?.message.content?.trim() || 'New Chat';
 
       // Update the session with the generated title
-      const { data: updatedSession, error: updateError } = await supabase
+      const { data: updatedSession, error: updateError } = await supabaseClient
         .from('chat_sessions')
         .update({ title })
         .eq('id', sessionId)
@@ -78,7 +91,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         ? prompt.substring(0, 20) + '...'
         : prompt;
 
-      const { data: updatedSession, error: updateError } = await supabase
+      const { data: updatedSession, error: updateError } = await supabaseClient
         .from('chat_sessions')
         .update({ title: fallbackTitle })
         .eq('id', sessionId)

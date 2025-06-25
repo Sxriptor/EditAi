@@ -1,18 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function GET() {
-  const supabase = createClient();
+export async function GET(request: Request) {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get the Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
-    const { data: sessions, error } = await supabase
+    // Extract the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Use the direct supabase client with the token
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const supabaseClient = createClient();
+
+    const { data: sessions, error } = await supabaseClient
       .from('chat_sessions')
       .select('id, title, created_at, updated_at')
       .eq('user_id', user.id)
@@ -33,19 +43,29 @@ export async function GET() {
   }
 }
 
-export async function POST() {
-  const supabase = createClient();
+export async function POST(request: Request) {
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Get the Authorization header
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Authorization header required' }, { status: 401 });
     }
 
+    // Extract the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    
+    // Use the direct supabase client with the token
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    const supabaseClient = createClient();
+
     // Create a new chat session with a null title
-    const { data: newSession, error } = await supabase
+    const { data: newSession, error } = await supabaseClient
       .from('chat_sessions')
       .insert({ user_id: user.id })
       .select()
