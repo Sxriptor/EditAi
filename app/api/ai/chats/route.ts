@@ -12,15 +12,26 @@ export async function GET(request: Request) {
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     const { data: sessions, error } = await supabaseClient
       .from('chat_sessions')
@@ -33,9 +44,10 @@ export async function GET(request: Request) {
       throw error;
     }
 
-    return NextResponse.json(sessions);
+    return NextResponse.json(sessions || []);
 
   } catch (error) {
+    console.error('Chat sessions API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch chat sessions', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
@@ -54,15 +66,26 @@ export async function POST(request: Request) {
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     // Create a new chat session with a null title
     const { data: newSession, error } = await supabaseClient
@@ -79,6 +102,7 @@ export async function POST(request: Request) {
     return NextResponse.json(newSession);
 
   } catch (error) {
+    console.error('Create chat session API error:', error);
     return NextResponse.json(
       { error: 'Failed to create new chat session', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

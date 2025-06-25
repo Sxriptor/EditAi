@@ -404,7 +404,9 @@ export default function ColorGradeDashboard() {
   // Load presets and favorites from database when user is authenticated
   useEffect(() => {
     const loadData = async () => {
-      if (!session?.access_token) return
+      if (!session?.access_token || loading) return
+
+      console.log('🔄 Loading LUT data for authenticated user...')
 
       try {
         // Load presets first
@@ -430,6 +432,7 @@ export default function ColorGradeDashboard() {
             setFavoritePresets(JSON.parse(savedFavorites))
           }
         }
+        console.log('✅ LUT data loaded successfully')
       } catch (error) {
         console.error('Error loading data:', error)
         // Fall back to localStorage on error
@@ -440,13 +443,29 @@ export default function ColorGradeDashboard() {
       }
     }
 
-    loadData()
-  }, [session])
+    // Only load once when user becomes authenticated and loading is complete
+    if (!loading && session?.access_token && user) {
+      loadData()
+    }
+  }, [session?.access_token, loading, user]) // More specific dependencies
+
+  // Rate limiting for API calls
+  const [lastLutLoadTime, setLastLutLoadTime] = useState<number>(0)
+  const LUT_LOAD_COOLDOWN = 5000 // 5 seconds minimum between loads
 
   // Database integration functions
   const loadPresetsFromDatabase = async (accessToken: string) => {
+    // Rate limiting - prevent loading more than once every 5 seconds
+    const now = Date.now()
+    if (now - lastLutLoadTime < LUT_LOAD_COOLDOWN) {
+      console.log('⏱️ LUT loading rate limited, skipping...')
+      return
+    }
+    setLastLutLoadTime(now)
+
     setIsLoadingPresets(true)
     try {
+      console.log('📡 Fetching LUT presets from database...')
       const response = await fetch('/api/luts/load', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -1791,8 +1810,53 @@ export default function ColorGradeDashboard() {
         // Set AI summary for UI display
         setAiSummary(aiResult.data.edit_summary)
 
-        // 💾 CHAT SAVING TEMPORARILY DISABLED TO AVOID 502 ERRORS
-        // TODO: Re-implement chat saving without affecting main AI processing flow
+        // 💾 SAVE AI INTERACTION TO CHAT HISTORY (INDEPENDENT OF MAIN FLOW)
+        if (typeof window !== 'undefined' && session?.access_token) {
+          // Use setTimeout to completely decouple from main processing
+          setTimeout(async () => {
+            try {
+              const chatData = {
+                userPrompt: prompt,
+                aiResponse: aiResult.data,
+                metadata: {
+                  image_url: originalImageData || mediaUrl,
+                  media_type: mediaType,
+                  workflow_mode: workflowMode,
+                  selected_styles: selectedPromptStyles,
+                  main_focus: selectedMainFocus,
+                  strategy: aiResult.data.strategy,
+                  enhanced_prompt: aiResult.data.enhanced_prompt,
+                  generated_image: aiResult.data.generated_image,
+                  edit_steps: aiResult.data.edit_steps,
+                  confidence_score: aiResult.data.confidence_score,
+                  timestamp: new Date().toISOString()
+                }
+              };
+
+              // Fire and forget - don't await or handle errors that could affect main flow
+              fetch('/api/ai/chats/save-interaction', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${session.access_token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chatData),
+              }).then(response => {
+                if (response.ok) {
+                  console.log('✅ Chat saved successfully');
+                  // Trigger custom event to notify chat overlay to refresh
+                  window.dispatchEvent(new CustomEvent('newAIInteraction'));
+                } else {
+                  console.log('💾 Chat save failed (non-blocking)');
+                }
+              }).catch(error => {
+                console.log('💾 Chat save error (non-blocking):', error);
+              });
+            } catch (error) {
+              console.log('💾 Chat save setup error (non-blocking):', error);
+            }
+          }, 1000); // 1 second delay to ensure main flow is complete
+        }
       } else {
         throw new Error('AI response format invalid')
       }

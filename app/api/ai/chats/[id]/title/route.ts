@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -7,8 +6,8 @@ const openai = new OpenAI({
 });
 
 // Generate an AI title for a chat session based on the first prompt
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const sessionId = params.id;
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: sessionId } = await params;
 
   try {
     // Get the Authorization header
@@ -20,15 +19,26 @@ export async function POST(request: Request, { params }: { params: { id: string 
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     const body = await request.json();
     const { prompt } = body;

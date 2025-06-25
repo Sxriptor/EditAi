@@ -284,23 +284,8 @@ export class AIEditingService {
       // Create a matching professional-grade style based on the prompt
       const generatedStyle = await this.createStyleFromPrompt(promptText, userPreferences);
 
-      this.logInteraction(
-        userId,
-        promptText,
-        'visual_transformation',
-        { 
-          edit_summary: `Generated image based on: "${finalPrompt}"`,
-          edit_steps: [],
-          style_trace: [strategy],
-          generated_image: generatedImageUrl, 
-          generated_style: generatedStyle 
-        },
-        Date.now() - startTime,
-        undefined,
-        originalImageUrl,
-        finalPrompt,
-        strategy
-      );
+      // TODO: Re-enable interaction logging without affecting main processing flow
+      // this.logInteraction(...)
       
       return {
         edit_summary: `Successfully generated new image.`,
@@ -664,7 +649,8 @@ LUT_3D_SIZE ${lutSize}
 
       const structuredResponse = this.parseAIResponse(aiContent, promptType, userPreferences, mediaAnalysis);
       
-      await this.logInteraction(userId, promptText, promptType, structuredResponse, responseTime, projectId, mediaUrl);
+      // TODO: Re-enable interaction logging without affecting main processing flow
+      // await this.logInteraction(userId, promptText, promptType, structuredResponse, responseTime, projectId, mediaUrl);
 
       return structuredResponse;
 

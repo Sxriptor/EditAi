@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Clock, Image, Wand2, Eye, EyeOff, Sparkles, Tag, Target } from 'lucide-react';
+import { X, Clock, Image, Wand2, Eye, EyeOff, Sparkles, Tag, Target, RefreshCw, Pause, Play } from 'lucide-react';
 import { useChatHistory } from '@/lib/chat-history-context';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,10 +19,13 @@ const ChatHistoryOverlay = () => {
   } = useChatHistory();
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
 
   useEffect(() => {
-    if (showChatHistory && chatSessions.length === 0) {
+    if (showChatHistory) {
       loadChatHistory().catch((error) => {
         console.error('Failed to load chat history:', error);
         // Don't crash the UI - just log the error
@@ -30,11 +33,98 @@ const ChatHistoryOverlay = () => {
     }
   }, [showChatHistory]);
 
+  // Auto-select the most recent session when sessions load
+  useEffect(() => {
+    if (chatSessions.length > 0 && !selectedSessionId) {
+      const mostRecentSession = chatSessions[0]; // Sessions are ordered by updated_at desc
+      setSelectedSessionId(mostRecentSession.id);
+      handleSessionSelect(mostRecentSession.id);
+    }
+  }, [chatSessions, selectedSessionId]);
+
+  // Auto-refresh every 30 seconds when overlay is open and auto-refresh is enabled
+  useEffect(() => {
+    if (!showChatHistory || !autoRefreshEnabled) return;
+
+    const interval = setInterval(() => {
+      handleRefresh();
+    }, 30000); // 30 seconds instead of 10
+
+    return () => clearInterval(interval);
+  }, [showChatHistory, autoRefreshEnabled]);
+
+  // Refresh when overlay is opened or becomes visible
+  useEffect(() => {
+    if (showChatHistory) {
+      // Small delay to ensure overlay is fully mounted
+      const timeout = setTimeout(() => {
+        handleRefresh();
+      }, 500);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [showChatHistory]);
+
+  // Listen for window focus to refresh when user returns to the app
+  useEffect(() => {
+    if (!showChatHistory) return;
+
+    const handleFocus = () => {
+      if (autoRefreshEnabled) {
+        handleRefresh();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [showChatHistory, autoRefreshEnabled]);
+
+  // Listen for custom events when new AI interactions are saved
+  useEffect(() => {
+    if (!showChatHistory) return;
+
+    const handleNewAIInteraction = () => {
+      console.log('🔄 New AI interaction detected, refreshing chat...');
+      handleRefresh();
+    };
+
+    window.addEventListener('newAIInteraction', handleNewAIInteraction);
+    return () => window.removeEventListener('newAIInteraction', handleNewAIInteraction);
+  }, [showChatHistory]);
+
   const handleSessionSelect = async (sessionId: string) => {
     setSelectedSessionId(sessionId);
     setIsLoading(true);
     await loadChatMessages(sessionId);
     setIsLoading(false);
+  };
+
+  const handleRefresh = async (force: boolean = false) => {
+    // Prevent multiple simultaneous refreshes
+    if (isRefreshing && !force) return;
+    
+    setIsRefreshing(true);
+    try {
+      const previousSessionCount = chatSessions.length;
+      const previousActiveMessages = activeChatMessages.length;
+      
+      await loadChatHistory();
+      if (selectedSessionId) {
+        await loadChatMessages(selectedSessionId);
+      }
+      
+      // Only show success message if data actually changed or it's a manual refresh
+      const newSessionCount = chatSessions.length;
+      if (force || newSessionCount !== previousSessionCount || activeChatMessages.length !== previousActiveMessages) {
+        console.log('🔄 Chat data refreshed');
+      }
+      
+      setLastRefreshTime(new Date());
+    } catch (error) {
+      console.error('Failed to refresh chat history:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const formatTimestamp = (timestamp: string) => {
@@ -90,7 +180,12 @@ const ChatHistoryOverlay = () => {
                 )}
               </div>
               
-              <p className="text-sm">{message.content}</p>
+              <p className="text-sm">
+                {typeof message.content === 'string' 
+                  ? message.content 
+                  : metadata?.prompt || 'User message'
+                }
+              </p>
               
               {metadata.image_url && (
                 <div className="mt-2">
@@ -126,7 +221,12 @@ const ChatHistoryOverlay = () => {
                 )}
               </div>
               
-              <p className="text-sm text-gray-200">{message.content.edit_summary}</p>
+              <p className="text-sm text-gray-200">
+                {typeof message.content === 'string' 
+                  ? message.content 
+                  : message.content?.edit_summary || 'AI response'
+                }
+              </p>
               
               {/* Generated Image */}
               {metadata.generated_image && (
@@ -189,7 +289,45 @@ const ChatHistoryOverlay = () => {
         {/* Sessions Sidebar */}
         <div className="w-80 border-r border-gray-700 flex flex-col">
           <div className="p-4 border-b border-gray-700">
-            <h3 className="text-sm font-semibold text-gray-200">Chat Sessions</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-200">Chat Sessions</h3>
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                  title={autoRefreshEnabled ? "Disable auto-refresh" : "Enable auto-refresh"}
+                >
+                  {autoRefreshEnabled ? (
+                    <Pause className="h-3 w-3" />
+                  ) : (
+                    <Play className="h-3 w-3" />
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleRefresh(true)}
+                  disabled={isRefreshing}
+                  className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                  title="Refresh now"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                </Button>
+              </div>
+            </div>
+            {autoRefreshEnabled && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                                 <span>Auto-refresh every 30s</span>
+              </div>
+            )}
+            {lastRefreshTime && (
+              <div className="text-xs text-gray-500 mt-1">
+                Last updated: {lastRefreshTime.toLocaleTimeString()}
+              </div>
+            )}
           </div>
           
           <ScrollArea className="flex-grow">
@@ -215,17 +353,33 @@ const ChatHistoryOverlay = () => {
                       </div>
                     </div>
                     <p className="text-xs text-gray-400">
-                      {formatTimestamp(session.created_at)}
+                      Created {formatTimestamp(session.created_at)}
                     </p>
                   </CardContent>
                 </Card>
               ))}
               
-              {chatSessions.length === 0 && (
+              {chatSessions.length === 0 && !isRefreshing && (
                 <div className="text-center py-8 text-gray-400">
                   <Wand2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No chat history yet</p>
                   <p className="text-xs">Start an AI conversation to see history</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleRefresh(true)}
+                    className="mt-4 text-xs"
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Check for new chats
+                  </Button>
+                </div>
+              )}
+              
+              {isRefreshing && chatSessions.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <p className="text-sm">Loading chat history...</p>
                 </div>
               )}
             </div>
@@ -235,13 +389,21 @@ const ChatHistoryOverlay = () => {
         {/* Messages Area */}
         <div className="flex-grow flex flex-col">
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-200">
-              {selectedSessionId ? (
-                chatSessions.find(s => s.id === selectedSessionId)?.title || 'Chat Details'
-              ) : (
-                'AI Chat History'
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-200">
+                {selectedSessionId ? (
+                  chatSessions.find(s => s.id === selectedSessionId)?.title || 'Chat Details'
+                ) : (
+                  'AI Chat History'
+                )}
+              </h2>
+              {autoRefreshEnabled && (
+                <div className="flex items-center gap-1 text-xs text-green-400">
+                  <div className="w-1 h-1 bg-green-400 rounded-full animate-pulse"></div>
+                  <span>Live</span>
+                </div>
               )}
-            </h2>
+            </div>
             <Button
               size="sm"
               variant="ghost"

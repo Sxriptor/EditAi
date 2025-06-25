@@ -135,14 +135,18 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const loadChatHistory = async (): Promise<void> => {
     try {
+      console.log('🔄 Loading chat history...');
+      
       // Get auth token (similar to how it's done in other API calls)
       const { supabase } = await import('@/lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
+        console.log('❌ No authentication token available');
         throw new Error('No authentication token available');
       }
 
+      console.log('🔑 Got auth token, making API request...');
       const response = await fetch('/api/ai/chats', {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -150,13 +154,19 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         },
       });
       
+      console.log('📡 API Response status:', response.status);
+      
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
         throw new Error(`Failed to load chat history: ${response.status} - ${errorText}`);
       }
 
       const sessions = await response.json();
-      setChatSessions(sessions);
+      console.log('✅ Chat sessions loaded:', sessions?.length || 0, 'sessions');
+      console.log('📋 Sessions data:', sessions);
+      
+      setChatSessions(sessions || []);
     } catch (error) {
       console.error('Error loading chat history:', error);
       throw error; // Re-throw to show user the actual error
@@ -165,14 +175,18 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
 
   const loadChatMessages = async (sessionId: string): Promise<void> => {
     try {
+      console.log('🔄 Loading messages for session:', sessionId);
+      
       // Get auth token
       const { supabase } = await import('@/lib/supabase');
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
+        console.log('❌ No authentication token available for messages');
         throw new Error('No authentication token available');
       }
 
+      console.log('🔑 Got auth token, fetching messages...');
       const response = await fetch(`/api/ai/chats/${sessionId}`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -180,12 +194,19 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         },
       });
       
+      console.log('📡 Messages API Response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Messages API Error:', response.status, errorText);
         throw new Error('Failed to load chat messages');
       }
 
       const messages = await response.json();
-      setActiveChatMessages(messages);
+      console.log('✅ Messages loaded:', messages?.length || 0, 'messages');
+      console.log('📋 Messages data:', messages);
+      
+      setActiveChatMessages(messages || []);
       setActiveSessionId(sessionId);
     } catch (error) {
       console.error('Error loading chat messages:', error);

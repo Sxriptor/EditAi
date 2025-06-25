@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 
 // Get all messages for a specific chat session
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const sessionId = params.id;
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: sessionId } = await params;
 
   try {
     // Get the Authorization header
@@ -15,15 +14,26 @@ export async function GET(request: Request, { params }: { params: { id: string }
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     // First, verify the user owns this session
     const { data: session, error: sessionError } = await supabaseClient
@@ -48,7 +58,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       throw messagesError;
     }
 
-    return NextResponse.json(messages);
+    return NextResponse.json(messages || []);
 
   } catch (error) {
     console.error('Error fetching chat messages:', error);
@@ -60,8 +70,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 // Add a new message to a specific chat session
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const sessionId = params.id;
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: sessionId } = await params;
 
   try {
     // Get the Authorization header
@@ -73,15 +83,26 @@ export async function POST(request: Request, { params }: { params: { id: string 
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     const body = await request.json();
     const { role, content, metadata } = body;
@@ -142,8 +163,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 // Delete a specific chat session
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const sessionId = params.id;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: sessionId } = await params;
 
   try {
     // Get the Authorization header
@@ -155,15 +176,26 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // Extract the JWT token from the Authorization header
     const token = authHeader.replace('Bearer ', '');
     
-    // Use the direct supabase client with the token
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create a Supabase client with the user's session token
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+
+    // Verify the token and get user info
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-
-    const supabaseClient = createClient();
 
     // The database is set up with 'ON DELETE CASCADE' for the chat_sessions table.
     // This means deleting a session will automatically delete all its messages.
